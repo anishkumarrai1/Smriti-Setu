@@ -1,0 +1,58 @@
+import { HealthServiceCategory } from '../types/govPortal';
+
+export const sampleHealthServicesData: HealthServiceCategory[] = [
+  {
+    id: 'srv-1',
+    title: 'Hospitals & Emergency Care',
+    category: 'Emergency & Acute Care',
+    description: 'Find 24x7 emergency medical care, intensive care units, and district referral hospitals across the North Eastern Region.',
+    iconName: 'Building2',
+    featured: true,
+    actionLabel: 'Find Hospitals →',
+  },
+  {
+    id: 'srv-2',
+    title: 'Cognitive Care & Memory Assistance',
+    category: 'Specialized Elder Care',
+    description: 'Access Smriti-Setu personalized cognitive activities, family memory timelines, and adaptive difficulty tracking.',
+    iconName: 'Heart',
+    featured: true,
+    actionLabel: 'Explore Cognitive Care →',
+  },
+  {
+    id: 'srv-3',
+    title: 'Primary & Community Health Centres',
+    category: 'Outpatient & Primary Care',
+    description: 'Locate local Primary Health Centres (PHCs) and Community Health Centres (CHCs) for routine health checkups.',
+    iconName: 'Activity',
+    featured: false,
+    actionLabel: 'Locate PHC/CHC →',
+  },
+  {
+    id: 'srv-4',
+    title: 'Caregiver Support & Resources',
+    category: 'Family & Caregiver Support',
+    description: 'Access guidelines, medication tracking tools, and family memory garden tools for primary elderly caregivers.',
+    iconName: 'UserCheck',
+    featured: false,
+    actionLabel: 'Caregiver Portal →',
+  },
+  {
+    id: 'srv-5',
+    title: 'Tele-MANAS & Mental Health Helpline',
+    category: 'Mental Wellness 24x7',
+    description: 'Connect with certified mental health professionals and geriatric counselors via Tele-MANAS helpline 14416 / 14567.',
+    iconName: 'PhoneCall',
+    featured: false,
+    actionLabel: 'Call Helpline →',
+  },
+  {
+    id: 'srv-6',
+    title: 'Regional Health Guidelines & Packs',
+    category: 'Public Health Resources',
+    description: 'Download health guides in English, Hindi, Assamese, and Bengali tailored for North East India communities.',
+    iconName: 'FileText',
+    featured: false,
+    actionLabel: 'Download Resources →',
+  },
+];

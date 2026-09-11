@@ -1,0 +1,17 @@
+{
+  "name": "smriti-setu-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smriti-Setu Monorepo: Frontend Web Portal & Backend API Service",
+  "scripts": {
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "build": "npm run build:frontend && npm run build:backend",
+    "start": "cd backend && npm start",
+    "test": "cd backend && npm test",
+    "test:backend": "cd backend && npm test",
+    "deploy": "cd frontend && npm run build && npx gh-pages -d dist"
+  }
+}
