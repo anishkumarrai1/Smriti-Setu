@@ -21,17 +21,17 @@ export const RoleSwitcher: React.FC = () => {
   const { role, setRole } = useAuthStore();
   const { elderlyMode } = useAccessibilityStore();
 
-  // Role prompt state when clicking a different role
   const [pendingRole, setPendingRole] = useState<UserRole | null>(null);
   const [loginId, setLoginId] = useState('');
-  const [password, setPassword] = useState('2026');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { login } = useAuthStore();
 
   const roleProfiles: Record<UserRole, {
     title: string;
     titleAs: string;
     badge: string;
-    defaultId: string;
-    defaultPass: string;
     userName: string;
     themeClass: string;
     btnClass: string;
@@ -40,9 +40,7 @@ export const RoleSwitcher: React.FC = () => {
       title: 'Senior Patient',
       titleAs: 'ৰোগী সেৱা',
       badge: '👴 Patient Portal',
-      defaultId: 'ABHA-NER-986401',
-      defaultPass: '2026',
-      userName: 'Ranjit Borthakur (72 Yrs)',
+      userName: 'Patient Account (e.g. patient@smritisetu.gov.in)',
       themeClass: 'bg-rose-50 border-rose-200 text-rose-950',
       btnClass: 'bg-rose-700 hover:bg-rose-800 text-white',
     },
@@ -50,9 +48,7 @@ export const RoleSwitcher: React.FC = () => {
       title: 'Caretaker / Caregiver',
       titleAs: 'সেৱাকাৰী',
       badge: '🩺 Caretaker Portal',
-      defaultId: 'CG-NER-4402',
-      defaultPass: '2026',
-      userName: 'Ananya Borthakur',
+      userName: 'Caregiver Account (e.g. caregiver@smritisetu.gov.in)',
       themeClass: 'bg-emerald-50 border-emerald-200 text-emerald-950',
       btnClass: 'bg-emerald-700 hover:bg-emerald-800 text-white',
     },
@@ -60,9 +56,7 @@ export const RoleSwitcher: React.FC = () => {
       title: 'Doctor / Clinician',
       titleAs: 'চিকিৎসক',
       badge: '👨‍⚕️ Medical Specialist Portal',
-      defaultId: 'MCI-NER-44921',
-      defaultPass: '2026',
-      userName: 'Dr. Bikash Barua, MD',
+      userName: 'Clinician Account (e.g. doctor@smritisetu.gov.in)',
       themeClass: 'bg-blue-50 border-blue-200 text-blue-950',
       btnClass: 'bg-[#004085] hover:bg-[#002b5c] text-white',
     },
@@ -70,9 +64,7 @@ export const RoleSwitcher: React.FC = () => {
       title: 'Facility Admin',
       titleAs: 'প্ৰশাসনীয়',
       badge: '🏛️ Regional Admin',
-      defaultId: 'NER-FAC-01',
-      defaultPass: '2026',
-      userName: 'Facility Coordinator',
+      userName: 'Admin Account (e.g. admin@smritisetu.gov.in)',
       themeClass: 'bg-purple-50 border-purple-200 text-purple-950',
       btnClass: 'bg-purple-700 hover:bg-purple-800 text-white',
     }
@@ -87,17 +79,34 @@ export const RoleSwitcher: React.FC = () => {
   const handleRoleButtonClick = (targetRole: UserRole) => {
     if (targetRole === role) return; // Already active role
 
-    // Prompt login authentication for the target role
+    // Prompt real authentication for the target role
     setPendingRole(targetRole);
-    setLoginId(roleProfiles[targetRole].defaultId);
-    setPassword(roleProfiles[targetRole].defaultPass);
+    setLoginId('');
+    setPassword('');
+    setAuthError(null);
   };
 
-  const handleConfirmLogin = (e: React.FormEvent) => {
+  const handleConfirmLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (pendingRole) {
-      setRole(pendingRole);
+    if (!loginId || !password) {
+      setAuthError('Please enter both Email/Identifier and Password.');
+      return;
+    }
+
+    setAuthError(null);
+    setLoading(true);
+
+    try {
+      const user = await login(loginId, password);
+      // If authentication succeeds
+      if (pendingRole) {
+        setRole(pendingRole);
+      }
       setPendingRole(null);
+    } catch (err: any) {
+      setAuthError(err?.response?.data?.error || 'Invalid credentials. Access denied.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -163,54 +172,45 @@ export const RoleSwitcher: React.FC = () => {
               <div className="text-xs text-slate-600 space-y-1">
                 <p className="font-bold text-slate-800 flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-[#004085]" />
-                  <span>Access to this dashboard requires role verification.</span>
+                  <span>Access to this dashboard requires valid credentials.</span>
                 </p>
-                <p>Please enter credentials to log in as <strong>{activePendingProfile.userName}</strong>:</p>
+                <p>Please enter your registered email/mobile and password to switch to <strong>{activePendingProfile.title}</strong>:</p>
               </div>
 
-              {/* Highlighted Credentials Box */}
-              <div className={`p-3.5 rounded-2xl border-2 space-y-1 ${activePendingProfile.themeClass}`}>
-                <div className="flex items-center justify-between text-[11px] font-black">
-                  <span>Highlighted {activePendingProfile.title} Credentials:</span>
-                  <span className="bg-white px-2 py-0.5 rounded-full border text-[10px]">Pre-loaded</span>
+              {authError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-xs font-bold rounded-xl flex items-center gap-2">
+                  <X className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{authError}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs font-mono pt-1">
-                  <div className="bg-white/90 p-1.5 rounded-lg border border-slate-200">
-                    <span className="text-[9px] text-slate-500 font-sans block">ID Number:</span>
-                    <strong className="text-slate-900 font-bold">{activePendingProfile.defaultId}</strong>
-                  </div>
-                  <div className="bg-white/90 p-1.5 rounded-lg border border-slate-200">
-                    <span className="text-[9px] text-slate-500 font-sans block">Passcode:</span>
-                    <strong className="text-slate-900 font-bold">{activePendingProfile.defaultPass}</strong>
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* Input Fields */}
               <div className="space-y-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    User / License / Card ID
+                    Registered Email / Mobile Number
                   </label>
                   <input
                     type="text"
                     required
+                    placeholder="e.g. user@smritisetu.gov.in"
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#004085]"
+                    className="w-full px-3.5 py-2.5 text-xs font-bold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#004085]"
                   />
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Security Passcode
+                    Password
                   </label>
                   <input
                     type="password"
                     required
+                    placeholder="Enter your account password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3.5 py-2 text-xs font-bold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#004085]"
+                    className="w-full px-3.5 py-2.5 text-xs font-bold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#004085]"
                   />
                 </div>
               </div>
@@ -227,10 +227,11 @@ export const RoleSwitcher: React.FC = () => {
 
                 <button
                   type="submit"
-                  className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95 ${activePendingProfile.btnClass}`}
+                  disabled={loading}
+                  className={`px-5 py-2.5 rounded-xl text-xs font-black flex items-center gap-2 shadow-md transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50 ${activePendingProfile.btnClass}`}
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Verify & Access Dashboard</span>
+                  <span>{loading ? 'Verifying...' : 'Authenticate & Enter Portal'}</span>
                 </button>
               </div>
 

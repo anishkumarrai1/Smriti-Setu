@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import authRoutes from './authRoutes';
+import adminRoutes from './adminRoutes';
 import patientRoutes from './patientRoutes';
 import memoryRoutes from './memoryRoutes';
 import activityRoutes from './activityRoutes';
@@ -26,6 +27,7 @@ const apiRouter = Router();
 
 // Mount domain routes
 apiRouter.use('/auth', authRoutes);
+apiRouter.use('/admin', adminRoutes);
 apiRouter.use('/patients', patientRoutes);
 apiRouter.use('/memories', memoryRoutes);
 apiRouter.use('/activities', activityRoutes);
@@ -51,4 +53,3 @@ apiRouter.use('/', deviceRoutes);    // /devices/:id, /device-events, /devices/:
 apiRouter.use('/', portalRoutes);    // /portal/*, /facilities, /states
 
 export default apiRouter;
-

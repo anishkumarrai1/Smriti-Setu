@@ -11,17 +11,13 @@ interface ActivityState {
   currentDifficulty: DifficultyLevel;
   difficultyAdjustmentNotice: string | null;
   startSession: (type: ActivityType) => void;
-<<<<<<< HEAD
   completeSession: (
     accuracy: number,
     attempts: number,
     responseTimeMs: number,
     explicitActivityType?: ActivityType
   ) => void;
-=======
-  completeSession: (accuracy: number, attempts: number, responseTimeMs: number, activityType?: ActivityType) => void;
   fetchSessionHistory: (patientId?: string) => Promise<void>;
->>>>>>> origin/main
   clearNotice: () => void;
   resetToDefaults: () => void;
 }
@@ -103,7 +99,6 @@ const availableActivities: CognitiveActivity[] = [
 
 const initialHistory: GameSession[] = [
   {
-<<<<<<< HEAD
     id: 'sess-108',
     patientId: 'pat-ner-001',
     activityType: 'photo_puzzle',
@@ -165,9 +160,6 @@ const initialHistory: GameSession[] = [
   },
   {
     id: 'sess-103',
-=======
-    id: 'sess-106',
->>>>>>> origin/main
     patientId: 'pat-ner-001',
     activityType: 'memory_match',
     timestamp: '2026-08-28T09:30:00Z',
@@ -178,107 +170,21 @@ const initialHistory: GameSession[] = [
     difficultyLevel: 'medium',
     difficultyAdjusted: true,
   },
-  {
-    id: 'sess-105',
-    patientId: 'pat-ner-001',
-    activityType: 'picture_recognition',
-    timestamp: '2026-08-27T10:15:00Z',
-    accuracyPercentage: 95,
-    attemptsCount: 5,
-    avgResponseTimeMs: 2300,
-    completed: true,
-    difficultyLevel: 'easy',
-    difficultyAdjusted: false,
-  },
-  {
-    id: 'sess-101',
-    patientId: 'pat-ner-001',
-    activityType: 'sequence_recall',
-    timestamp: '2026-08-26T11:00:00Z',
-    accuracyPercentage: 80,
-    attemptsCount: 7,
-    avgResponseTimeMs: 3900,
-    completed: true,
-    difficultyLevel: 'medium',
-    difficultyAdjusted: true,
-  },
-  {
-    id: 'sess-104',
-    patientId: 'pat-ner-001',
-    activityType: 'sequence_recall',
-    timestamp: '2026-08-26T11:00:00Z',
-    accuracyPercentage: 85,
-    attemptsCount: 7,
-    avgResponseTimeMs: 3100,
-    completed: true,
-    difficultyLevel: 'easy',
-    difficultyAdjusted: false,
-  },
-  {
-    id: 'sess-103',
-    patientId: 'pat-ner-001',
-    activityType: 'familiar_sound',
-    timestamp: '2026-08-24T14:20:00Z',
-    accuracyPercentage: 85,
-    attemptsCount: 6,
-    avgResponseTimeMs: 3500,
-    completed: true,
-    difficultyLevel: 'easy',
-    difficultyAdjusted: false,
-  },
-  {
-    id: 'sess-102',
-    patientId: 'pat-ner-001',
-    activityType: 'photo_puzzle',
-    timestamp: '2026-08-22T16:00:00Z',
-    accuracyPercentage: 82,
-    attemptsCount: 8,
-    avgResponseTimeMs: 3800,
-    completed: true,
-    difficultyLevel: 'easy',
-    difficultyAdjusted: false,
-  },
-  {
-    id: 'sess-101',
-    patientId: 'pat-ner-001',
-    activityType: 'memory_match',
-    timestamp: '2026-08-20T09:00:00Z',
-    accuracyPercentage: 78,
-    attemptsCount: 9,
-    avgResponseTimeMs: 4200,
-    completed: true,
-    difficultyLevel: 'easy',
-    difficultyAdjusted: false,
-  },
 ];
 
-<<<<<<< HEAD
-const STORAGE_KEY = 'smriti_setu_game_sessions';
-
-// Load stored sessions or fallback to rich initial history
-const loadStoredHistory = (): GameSession[] => {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-=======
 const LOCAL_STORAGE_SESSIONS_KEY = 'smriti_setu_game_sessions';
 
 const loadPersistedSessions = (): GameSession[] => {
   try {
     const saved = localStorage.getItem(LOCAL_STORAGE_SESSIONS_KEY);
->>>>>>> origin/main
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed;
       }
     }
-<<<<<<< HEAD
-  } catch {
-    // Fallback
-=======
   } catch (e) {
     console.warn('Failed to parse local session history', e);
->>>>>>> origin/main
   }
   return initialHistory;
 };
@@ -286,14 +192,9 @@ const loadPersistedSessions = (): GameSession[] => {
 export const useActivityStore = create<ActivityState>((set, get) => ({
   activities: availableActivities,
   activeSession: null,
-<<<<<<< HEAD
   sessionStartTime: Date.now(),
-  sessionHistory: loadStoredHistory(),
-  currentDifficulty: 'easy',
-=======
   sessionHistory: loadPersistedSessions(),
-  currentDifficulty: 'medium',
->>>>>>> origin/main
+  currentDifficulty: 'easy',
   difficultyAdjustmentNotice: null,
 
   fetchSessionHistory: async (patientId = 'pat-ner-001') => {
@@ -301,7 +202,6 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       const backendHistory = await gameApi.getSessionHistory(patientId);
       if (Array.isArray(backendHistory) && backendHistory.length > 0) {
         const local = get().sessionHistory;
-        // Merge without duplicates based on id
         const map = new Map<string, GameSession>();
         [...backendHistory, ...local].forEach((item) => map.set(item.id, item));
         const merged = Array.from(map.values()).sort(
@@ -332,11 +232,9 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
     set({ activeSession: newSession, sessionStartTime: now });
   },
 
-<<<<<<< HEAD
   completeSession: async (accuracy, attempts, responseTimeMs, explicitActivityType) => {
     const { activeSession, sessionHistory, currentDifficulty, sessionStartTime } = get();
-    
-    // Ensure accurate response time calculation (fallback to elapsed real-time if not provided)
+
     const elapsedMs = Math.max(1500, Date.now() - (sessionStartTime || Date.now()));
     const finalResponseTimeMs = responseTimeMs > 0 ? responseTimeMs : elapsedMs;
     const finalAttempts = Math.max(1, attempts);
@@ -350,42 +248,14 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       accuracyPercentage: Math.max(0, Math.min(100, Math.round(accuracy))),
       attemptsCount: finalAttempts,
       avgResponseTimeMs: finalResponseTimeMs,
-=======
-  completeSession: async (accuracy, attempts, responseTimeMs, activityType) => {
-    const { activeSession, sessionHistory, currentDifficulty } = get();
-    
-    const fallbackType = activityType || (activeSession ? activeSession.activityType : 'memory_match');
-    
-    const completedSession: GameSession = {
-      id: activeSession?.id || `sess-${Date.now()}`,
-      patientId: activeSession?.patientId || 'pat-ner-001',
-      activityType: fallbackType,
-      timestamp: activeSession?.timestamp || new Date().toISOString(),
-      accuracyPercentage: accuracy,
-      attemptsCount: attempts,
-      avgResponseTimeMs: responseTimeMs,
->>>>>>> origin/main
       completed: true,
       difficultyLevel: currentDifficulty,
       difficultyAdjusted: false,
     };
 
-<<<<<<< HEAD
-    // Prepend latest completed session to top of history
-    const updatedHistory = [completedSession, ...sessionHistory];
-    
-    // Save to localStorage for real-time persistence
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedHistory));
-    } catch {
-      // Storage error fallback
-    }
-
-=======
     const updatedHistory = [completedSession, ...sessionHistory.filter((s) => s.id !== completedSession.id)];
->>>>>>> origin/main
     const adaptResult = calculateNextDifficulty(currentDifficulty, updatedHistory);
-    
+
     completedSession.difficultyLevel = adaptResult.nextDifficulty;
     completedSession.difficultyAdjusted = adaptResult.adjusted;
 
@@ -426,7 +296,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
   resetToDefaults: () => {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LOCAL_STORAGE_SESSIONS_KEY);
     } catch {}
     set({ sessionHistory: initialHistory, activeSession: null });
   },

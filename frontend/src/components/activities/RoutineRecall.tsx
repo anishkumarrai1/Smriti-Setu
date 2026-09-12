@@ -478,7 +478,6 @@ export const RoutineRecall: React.FC<RoutineRecallProps> = ({
         const accuracy = Math.round((completedCount / totalCount) * 100);
         onComplete(accuracy, completedCount, 2200);
       }
-      }
     }
   };
 

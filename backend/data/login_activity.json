@@ -1,0 +1,182 @@
+[
+  {
+    "userId": "usr-admin-001",
+    "identifier": "admin@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Unknown Browser",
+    "id": "log-1789240643178-j5hug",
+    "timestamp": "2026-09-12T19:17:23.178Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Unknown Browser",
+    "id": "log-1789240643031-kn1z2",
+    "timestamp": "2026-09-12T19:17:23.031Z"
+  },
+  {
+    "userId": "usr-admin-001",
+    "identifier": "admin@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Unknown Browser",
+    "id": "log-1789240624481-xot51",
+    "timestamp": "2026-09-12T19:17:04.481Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Unknown Browser",
+    "id": "log-1789240624314-u29er",
+    "timestamp": "2026-09-12T19:17:04.314Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Unknown Browser",
+    "id": "log-1789240525892-ksues",
+    "timestamp": "2026-09-12T19:15:25.892Z"
+  },
+  {
+    "userId": "pat-ner-001",
+    "identifier": "patient@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789240264505-29wkg",
+    "timestamp": "2026-09-12T19:11:04.505Z"
+  },
+  {
+    "userId": "pat-ner-001",
+    "identifier": "patient@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789239529732-22uqg",
+    "timestamp": "2026-09-12T18:58:49.732Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789239280087-bgc8e",
+    "timestamp": "2026-09-12T18:54:40.087Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789239032293-urtdp",
+    "timestamp": "2026-09-12T18:50:32.293Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789238390121-cmbet",
+    "timestamp": "2026-09-12T18:39:50.121Z"
+  },
+  {
+    "userId": "pat-ner-001",
+    "identifier": "patient@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789238298587-h4sno",
+    "timestamp": "2026-09-12T18:38:18.587Z"
+  },
+  {
+    "userId": "doc-ner-003",
+    "identifier": "doctor@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789238122043-qwyqg",
+    "timestamp": "2026-09-12T18:35:22.043Z"
+  },
+  {
+    "identifier": "docter@smritisetu.gov.in",
+    "status": "failed",
+    "authMethod": "mobile_password",
+    "failureReason": "Account does not exist",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789238097576-9l02y",
+    "timestamp": "2026-09-12T18:34:57.576Z"
+  },
+  {
+    "userId": "pat-ner-001",
+    "identifier": "patient@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789237879768-jsqb3",
+    "timestamp": "2026-09-12T18:31:19.768Z"
+  },
+  {
+    "userId": "pat-ner-001",
+    "identifier": "patient@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789237070081-j2i7z",
+    "timestamp": "2026-09-12T18:17:50.082Z"
+  },
+  {
+    "userId": "usr-admin-001",
+    "identifier": "admin@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789236921632-dtsci",
+    "timestamp": "2026-09-12T18:15:21.632Z"
+  },
+  {
+    "identifier": "admin@smritsetu.gov.in",
+    "status": "failed",
+    "authMethod": "mobile_password",
+    "failureReason": "Account does not exist",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789236902558-lyvvs",
+    "timestamp": "2026-09-12T18:15:02.558Z"
+  },
+  {
+    "userId": "usr-admin-001",
+    "identifier": "admin@smritisetu.gov.in",
+    "status": "success",
+    "authMethod": "email_password",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789236566469-kssnc",
+    "timestamp": "2026-09-12T18:09:26.469Z"
+  }
+]

@@ -1,11 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Clock, 
   ArrowRight, 
-  Sparkles
+  Sparkles,
+  User,
+  RefreshCw
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { VoiceButton } from '../../components/common/VoiceButton';
+import { PatientSwitcherModal } from '../../components/common/PatientSwitcherModal';
 import { ActivityType } from '../../types';
 
 interface PatientDashboardProps {
@@ -13,9 +16,11 @@ interface PatientDashboardProps {
 }
 
 export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActivity }) => {
-  const { selectedPatient } = useAuthStore();
+  const { selectedPatient, patients } = useAuthStore();
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
 
-  const greetingMessage = `Good morning, ${selectedPatient?.name || 'Ranjit ji'}. A few peaceful memory activities for today.`;
+  const patientName = selectedPatient?.name || 'Ranjit Borthakur';
+  const greetingMessage = `Good morning, ${patientName}. Welcome to your cognitive memory activities. Choose a game below to begin today's guided session.`;
 
   const baseUrl = (import.meta as any).env?.BASE_URL || '/';
 
@@ -90,10 +95,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
             <span className="px-3 py-0.5 bg-amber-400 text-slate-950 font-black text-xs rounded-md uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
               <Sparkles className="w-3.5 h-3.5" /> Senior Patient Care Node
             </span>
+            <button
+              onClick={() => setIsSwitcherOpen(true)}
+              className="px-3 py-0.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-md backdrop-blur-xs flex items-center gap-1 border border-white/30 transition-all cursor-pointer"
+              title="Switch patient or add new patient"
+            >
+              <User className="w-3.5 h-3.5 text-amber-300" />
+              <span>Switch Patient ({patients.length} available)</span>
+              <RefreshCw className="w-3 h-3 ml-0.5 text-amber-300" />
+            </button>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-serif font-bold text-white leading-tight">
-            Good morning, Ranjit Borthakur.
+            Good morning, {patientName}.
           </h1>
           <p className="text-sm sm:text-base text-slate-200 font-medium leading-relaxed">
             Welcome to your cognitive memory activities. Choose a game below to begin today's guided session.
@@ -101,7 +115,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
 
           <div className="pt-1">
             <VoiceButton 
-              textToSpeak="Good morning, Ranjit Borthakur. Welcome to your cognitive memory activities. Choose a game below to begin today's guided session." 
+              textToSpeak={greetingMessage}
               label="Listen to Audio Guide" 
             />
           </div>
@@ -173,6 +187,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
           ))}
         </div>
       </div>
+
+      {/* Patient Switcher Modal */}
+      <PatientSwitcherModal
+        isOpen={isSwitcherOpen}
+        onClose={() => setIsSwitcherOpen(false)}
+      />
 
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LoginPage } from './pages/LoginPage';
 import { PublicPortalPage } from './pages/PublicPortalPage';
 import { AppShell } from './components/layout/AppShell';
@@ -7,6 +7,7 @@ import { UserRole } from './types';
 import { PatientDashboard } from './pages/patient/PatientDashboard';
 import { CaregiverDashboard } from './pages/caregiver/CaregiverDashboard';
 import { ClinicianDashboard } from './pages/clinician/ClinicianDashboard';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { ActivityContainer } from './components/activities/ActivityContainer';
 import { ActivityType } from './types';
 import { MemoryGardenView } from './components/memory/MemoryGardenView';
@@ -21,19 +22,21 @@ import { useTranslation } from 'react-i18next';
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
-  const { role, setRole } = useAuthStore();
+  const { role, setRole, fetchMe, logout, systemRole } = useAuthStore();
   
   // Dedicated Login Gateway as primary entry mode
   const [viewMode, setViewMode] = useState<'login' | 'public_portal' | 'authenticated_app'>('login');
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeTab, setActiveTab] = useState<string>('home');
 
-  React.useEffect(() => {
+  useEffect(() => {
+    // Check existing authentication session on launch
+    fetchMe();
     // Initialize Socket.io connection to hardware gateway
     useHardwareSocketStore.getState().connect();
     // Initialize unified hardware input adapter (unbound to games)
     hardwareInputAdapter.initialize();
-  }, []);
+  }, [fetchMe]);
 
   const handleStartActivity = (type: ActivityType) => {
     setSelectedActivity(type);
@@ -54,7 +57,8 @@ export const App: React.FC = () => {
     setViewMode('authenticated_app');
   };
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
+    await logout();
     setSelectedActivity(null);
     setActiveTab('home');
     setViewMode('login');
@@ -91,7 +95,10 @@ export const App: React.FC = () => {
           </div>
         </div>
 
-        <PublicPortalPage onOpenAppAuth={handleOpenAppAuth} />
+        <PublicPortalPage
+          onOpenAppAuth={handleOpenAppAuth}
+          onGoToLogin={() => setViewMode('login')}
+        />
         
         <AiVoiceCompanion
           onStartActivity={(type) => {
@@ -109,7 +116,7 @@ export const App: React.FC = () => {
     );
   }
 
-  // 3. AUTHENTICATED SMRITI-SETU APPLICATION (Patient, Caregiver, Doctor)
+  // 3. AUTHENTICATED SMRITI-SETU APPLICATION (Patient, Caregiver, Doctor, Admin)
   return (
     <div className="relative min-h-screen bg-slate-50">
       <ForceTranslationListener />
@@ -124,6 +131,7 @@ export const App: React.FC = () => {
         <div className="flex items-center gap-3">
           <span className="text-slate-200 font-semibold hidden sm:inline bg-govNavy px-3 py-0.5 rounded-full border border-slate-600">
             {t('portal.authenticatedRole', 'Authenticated Role')}: <strong className="text-white uppercase">{t(`roles.${role}`, role)}</strong>
+            {systemRole === 'admin' && <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-red-600 text-white rounded font-bold">ADMIN</span>}
           </span>
           <button
             onClick={handleSignOut}
@@ -145,6 +153,10 @@ export const App: React.FC = () => {
                 onBack={handleBackFromActivity}
               />
             );
+          }
+
+          if (activeTab === 'admin') {
+            return <AdminDashboard />;
           }
 
           if (role === 'patient') {

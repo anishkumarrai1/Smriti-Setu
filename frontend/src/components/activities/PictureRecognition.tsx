@@ -841,7 +841,7 @@ export const PictureRecognition: React.FC<PictureRecognitionProps> = ({ onComple
     setTimeout(() => {
       setTypedResponseText((prev) => {
         if (!prev.trim()) {
-          const sampleSpeech = `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle} (${currentPerson.name})`;
+          const sampleSpeech = `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle}`;
           setSpeechTranscript(sampleSpeech);
           return sampleSpeech;
         }
@@ -910,7 +910,7 @@ export const PictureRecognition: React.FC<PictureRecognitionProps> = ({ onComple
     const text =
       typedResponseText ||
       speechTranscript ||
-      `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle} (${currentPerson.name})`;
+      `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle}`;
     speakText(text, activeLang, () => setIsAudioPlaying(false));
   };
 
@@ -942,7 +942,7 @@ export const PictureRecognition: React.FC<PictureRecognitionProps> = ({ onComple
     const text =
       typedResponseText ||
       speechTranscript ||
-      `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle} (${currentPerson.name})`;
+      `${RELATION_LABELS[currentPerson.relationKey][activeLang].fullTitle}`;
 
     if (isAudioPlaying) {
       stopSpeech();
@@ -1119,9 +1119,11 @@ export const PictureRecognition: React.FC<PictureRecognitionProps> = ({ onComple
                       Custom Upload
                     </div>
                   )}
-                  <div className="absolute bottom-3 left-3 bg-charcoal-900/80 backdrop-blur-xs text-white text-xs md:text-sm font-bold px-4 py-1.5 rounded-full border border-white/20">
-                    {currentPerson.name}
-                  </div>
+                  {isAnswered && (
+                    <div className="absolute bottom-3 left-3 bg-charcoal-900/80 backdrop-blur-xs text-white text-xs md:text-sm font-bold px-4 py-1.5 rounded-full border border-white/20 animate-fadeIn">
+                      {currentPerson.name}
+                    </div>
+                  )}
                 </div>
 
                 {/* Question Header & Audio Speaker */}
@@ -1500,7 +1502,7 @@ export const PictureRecognition: React.FC<PictureRecognitionProps> = ({ onComple
                         key={`${item.key}-${idx}`}
                         type="button"
                         onClick={() => {
-                          const sample = `${item.label} (${currentPerson.name})`;
+                          const sample = item.label;
                           setTypedResponseText(sample);
                           setSpeechTranscript(sample);
                           speakText(sample, activeLang);

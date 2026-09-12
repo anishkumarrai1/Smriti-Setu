@@ -1,5 +1,6 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -10,17 +11,21 @@ dotenv.config();
 
 const app = express();
 
+// Trust reverse proxy (Cloudflare, Nginx, tunnels) for IP detection and rate limiting
+app.set('trust proxy', 1);
+
 // CORS configuration - dynamic origin to support local dev, public tunnels & custom domains
 app.use(
   cors({
     origin: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Platform-Region'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Platform-Region', 'X-Captcha-Token'],
     credentials: true,
   })
 );
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Request logging in development
 app.use((req: Request, res: Response, next) => {

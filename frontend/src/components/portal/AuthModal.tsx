@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Lock, 
@@ -9,9 +9,18 @@ import {
   ArrowRight, 
   ShieldCheck, 
   Sparkles,
-  PhoneCall
+  PhoneCall,
+  Mail,
+  Smartphone,
+  CheckCircle2,
+  AlertCircle,
+  KeyRound,
+  RefreshCw,
+  UserPlus,
+  Shield
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { authApi } from '../../services/api';
 import { UserRole } from '../../types';
 import { AshokaEmblem, IndianFlagBadge } from '../common/GovEmblem';
 
@@ -19,403 +28,739 @@ interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginSuccess: (role: UserRole) => void;
+  initialMode?: AuthMode;
 }
+
+type AuthMode = 'login' | 'signup' | 'forgot_password';
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   onLoginSuccess,
+  initialMode = 'login',
 }) => {
   const { t } = useTranslation();
-  const { setRole } = useAuthStore();
+  const { setRole, login, register, isAuthenticated, systemRole } = useAuthStore();
+
+  const [authMode, setAuthMode] = useState<AuthMode>(initialMode);
+
+  useEffect(() => {
+    if (isOpen) {
+      setAuthMode(initialMode);
+    }
+  }, [isOpen, initialMode]);
   const [selectedRoleTab, setSelectedRoleTab] = useState<UserRole>('patient');
-  const [loginMethod, setLoginMethod] = useState<'quick' | 'abha'>('quick');
   
-  // Custom Form Inputs
-  const [abhaId, setAbhaId] = useState('');
-  const [passcode, setPasscode] = useState('');
+  // Login State
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginLoading, setLoginLoading] = useState(false);
+
+  // Signup State
+  const [fullName, setFullName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [emailOtp, setEmailOtp] = useState('');
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [emailOtpSent, setEmailOtpSent] = useState(false);
+  const [emailCooldown, setEmailCooldown] = useState(0);
+
+  const [signupMobile, setSignupMobile] = useState('');
+  const [mobileOtp, setMobileOtp] = useState('');
+  const [mobileVerified, setMobileVerified] = useState(false);
+  const [mobileOtpSent, setMobileOtpSent] = useState(false);
+  const [mobileCooldown, setMobileCooldown] = useState(0);
+
+  const [signupPassword, setSignupPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [signupError, setSignupError] = useState<string | null>(null);
+  const [signupNotice, setSignupNotice] = useState<string | null>(null);
+  const [signupLoading, setSignupLoading] = useState(false);
+
+  // Forgot Password State
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [forgotOtp, setForgotOtp] = useState('');
+  const [forgotOtpSent, setForgotOtpSent] = useState(false);
+  const [forgotVerified, setForgotVerified] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [forgotMessage, setForgotMessage] = useState<string | null>(null);
+  const [forgotError, setForgotError] = useState<string | null>(null);
+  const [forgotLoading, setForgotLoading] = useState(false);
+
+  // Cooldown timer interval
+  useEffect(() => {
+    let interval: any;
+    if (emailCooldown > 0 || mobileCooldown > 0) {
+      interval = setInterval(() => {
+        setEmailCooldown((c) => Math.max(0, c - 1));
+        setMobileCooldown((c) => Math.max(0, c - 1));
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [emailCooldown, mobileCooldown]);
 
   if (!isOpen) return null;
 
-  const handleRoleSelectAndLogin = (role: UserRole) => {
-    setRole(role);
-    onLoginSuccess(role);
-    onClose();
+  // Password Policy Rules Checker
+  const getPasswordRules = (pass: string) => {
+    const p = pass || '';
+    return {
+      maxLength: p.length > 0 && p.length <= 8,
+      hasUppercase: /[A-Z]/.test(p),
+      hasLowercase: /[a-z]/.test(p),
+      hasNumber: /[0-9]/.test(p),
+      hasSpecialChar: /[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]/.test(p),
+      noSpaces: !/\s/.test(p),
+    };
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const currentRules = getPasswordRules(authMode === 'signup' ? signupPassword : newPassword);
+  const isPasswordValid = Object.values(currentRules).every(Boolean);
+
+  // Handlers for OTP Triggers
+  const handleSendEmailOtp = async () => {
+    if (!signupEmail || !signupEmail.includes('@')) {
+      setSignupError('Please enter a valid email address.');
+      return;
+    }
+    setSignupError(null);
+    setSignupNotice(null);
+    try {
+      const res: any = await authApi.sendEmailOtp(signupEmail);
+      setEmailOtpSent(true);
+      setEmailCooldown(res.cooldownSeconds || 60);
+      setEmailOtp('');
+      setSignupNotice(`OTP verification code sent to ${signupEmail}. Please check your inbox.`);
+    } catch (err: any) {
+      setSignupError(err?.response?.data?.error || 'Failed to send email OTP.');
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    if (!emailOtp) return;
+    setSignupError(null);
+    setSignupNotice(null);
+    try {
+      await authApi.verifyEmailOtp(signupEmail, emailOtp);
+      setEmailVerified(true);
+      setSignupNotice('✅ Email verified successfully!');
+    } catch (err: any) {
+      setSignupError(err?.response?.data?.error || 'Invalid or expired email OTP.');
+    }
+  };
+
+  const handleSendMobileOtp = async () => {
+    if (!signupMobile || signupMobile.length < 8) {
+      setSignupError('Please enter a valid mobile number with country code (e.g. +91 98640 12345).');
+      return;
+    }
+    setSignupError(null);
+    setSignupNotice(null);
+    try {
+      const res: any = await authApi.sendMobileOtp(signupMobile);
+      setMobileOtpSent(true);
+      setMobileCooldown(res.cooldownSeconds || 60);
+      setMobileOtp('');
+      setSignupNotice(`OTP verification code sent via SMS to ${signupMobile}.`);
+    } catch (err: any) {
+      setSignupError(err?.response?.data?.error || 'Failed to send mobile OTP.');
+    }
+  };
+
+  const handleVerifyMobileOtp = async () => {
+    if (!mobileOtp) return;
+    setSignupError(null);
+    setSignupNotice(null);
+    try {
+      await authApi.verifyMobileOtp(signupMobile, mobileOtp);
+      setMobileVerified(true);
+      setSignupNotice('✅ Mobile number verified successfully!');
+    } catch (err: any) {
+      setSignupError(err?.response?.data?.error || 'Invalid or expired mobile OTP.');
+    }
+  };
+
+  // Submit Login
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleRoleSelectAndLogin(selectedRoleTab);
+    setLoginError(null);
+    setLoginLoading(true);
+
+    try {
+      const user = await login(loginIdentifier, loginPassword);
+      setRole(user.assignedRole || selectedRoleTab);
+      onLoginSuccess(user.assignedRole || selectedRoleTab);
+      onClose();
+    } catch (err: any) {
+      setLoginError(err?.response?.data?.error || 'Invalid email/mobile or password.');
+    } finally {
+      setLoginLoading(false);
+    }
   };
 
-  // Only the 3 Core Roles: Patient, Caretaker/Caregiver, Doctor/Clinician
-  const roleConfigs = [
-    {
-      id: 'patient' as UserRole,
-      title: 'Patient Portal',
-      titleAs: 'ৰোগী সেৱা',
-      badge: '👴 Senior Citizen & Patient',
-      name: 'Ranjit Borthakur (72 Yrs)',
-      location: 'Kamrup Metropolitan, Assam',
-      description: 'Voice-guided memory match, family photo puzzles, regional music, and scheduled routine timetable.',
-      icon: HeartPulse,
-      themeGradient: 'from-rose-500/10 via-rose-500/5 to-transparent',
-      accentBorder: 'border-rose-300 hover:border-rose-500',
-      activeRing: 'ring-4 ring-rose-400/80 border-rose-600 bg-rose-50/95 shadow-2xl scale-[1.02]',
-      buttonBg: 'bg-rose-700 hover:bg-rose-800 text-white shadow-rose-900/20',
-      badgeBg: 'bg-rose-100 text-rose-800 border border-rose-200',
-      avatarBg: 'bg-rose-600 text-white',
-      demoCred: 'ABHA: 98-6401-2026-NER',
-    },
-    {
-      id: 'caregiver' as UserRole,
-      title: 'Caretaker / Caregiver',
-      titleAs: 'সেৱাকাৰী পৰ্টেল',
-      badge: '🩺 Family Member & Caretaker',
-      name: 'Ananya Borthakur',
-      location: 'Primary Caregiver · Guwahati',
-      description: 'Real-time patient cognitive telemetry, memory photo uploads, medicine alerts, and doctor report downloads.',
-      icon: UserCheck,
-      themeGradient: 'from-emerald-500/10 via-emerald-500/5 to-transparent',
-      accentBorder: 'border-emerald-300 hover:border-emerald-500',
-      activeRing: 'ring-4 ring-emerald-400/80 border-emerald-600 bg-emerald-50/95 shadow-2xl scale-[1.02]',
-      buttonBg: 'bg-emerald-700 hover:bg-emerald-800 text-white shadow-emerald-900/20',
-      badgeBg: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
-      avatarBg: 'bg-emerald-600 text-white',
-      demoCred: 'Caretaker ID: CG-NER-4402',
-    },
-    {
-      id: 'clinician' as UserRole,
-      title: 'Doctor / Clinician',
-      titleAs: 'চিকিৎসক পৰ্টেল',
-      badge: '👨‍⚕️ Neuropsychiatrist Specialist',
-      name: 'Dr. Bikash Barua, MD',
-      location: 'AIIMS / Guwahati Regional Center',
-      description: 'Cognitive zigzag trajectories, response latency analytics, dementia stage evaluation, and digital sign-off.',
-      icon: Stethoscope,
-      themeGradient: 'from-blue-500/10 via-blue-500/5 to-transparent',
-      accentBorder: 'border-blue-300 hover:border-blue-500',
-      activeRing: 'ring-4 ring-blue-400/80 border-blue-600 bg-blue-50/95 shadow-2xl scale-[1.02]',
-      buttonBg: 'bg-blue-700 hover:bg-blue-800 text-white shadow-blue-900/20',
-      badgeBg: 'bg-blue-100 text-blue-800 border border-blue-200',
-      avatarBg: 'bg-blue-600 text-white',
-      demoCred: 'NMC Reg: MCI-NER-44921',
-    },
-  ];
+  // Submit Signup
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignupError(null);
 
-  const currentRoleConfig = roleConfigs.find((r) => r.id === selectedRoleTab) || roleConfigs[0];
-  const IconComp = currentRoleConfig.icon;
+    if (!emailVerified) {
+      setSignupError('Email must be OTP verified before account creation. Please verify the OTP sent to your email.');
+      return;
+    }
+
+    if (!isPasswordValid) {
+      setSignupError('Password must meet all safety requirements (Max 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 symbol, no spaces).');
+      return;
+    }
+
+    if (signupPassword !== confirmPassword) {
+      setSignupError('Passwords do not match.');
+      return;
+    }
+
+    setSignupLoading(true);
+    try {
+      const user = await register({
+        fullName,
+        email: signupEmail,
+        emailVerified: true,
+        mobileNumber: signupMobile || '',
+        mobileVerified: mobileVerified || false,
+        password: signupPassword,
+        assignedRole: selectedRoleTab,
+      });
+
+      setRole(user.assignedRole || selectedRoleTab);
+      onLoginSuccess(user.assignedRole || selectedRoleTab);
+      onClose();
+    } catch (err: any) {
+      setSignupError(err?.response?.data?.error || 'Account creation failed.');
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  // Submit Forgot Password OTP Request
+  const handleSendForgotOtp = async () => {
+    if (!forgotIdentifier) return;
+    setForgotError(null);
+    try {
+      const res = await authApi.forgotPassword(forgotIdentifier);
+      setForgotOtpSent(true);
+      setForgotMessage(res.message);
+    } catch (err: any) {
+      setForgotError(err?.response?.data?.error || 'Failed to request reset OTP.');
+    }
+  };
+
+  // Verify Forgot Password OTP
+  const handleVerifyForgotOtp = async () => {
+    if (!forgotOtp) return;
+    setForgotError(null);
+    try {
+      const isEmail = forgotIdentifier.includes('@');
+      if (isEmail) {
+        await authApi.verifyEmailOtp(forgotIdentifier, forgotOtp);
+      } else {
+        await authApi.verifyMobileOtp(forgotIdentifier, forgotOtp);
+      }
+      setForgotVerified(true);
+    } catch (err: any) {
+      setForgotError(err?.response?.data?.error || 'Invalid or expired OTP.');
+    }
+  };
+
+  // Submit Password Reset
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isPasswordValid) {
+      setForgotError('Password must satisfy all rules.');
+      return;
+    }
+
+    setForgotLoading(true);
+    try {
+      await authApi.resetPassword(forgotIdentifier, forgotOtp, newPassword);
+      alert('Password reset successfully! Please log in with your new password.');
+      setAuthMode('login');
+      setLoginIdentifier(forgotIdentifier);
+    } catch (err: any) {
+      setForgotError(err?.response?.data?.error || 'Password reset failed.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   return (
-    // Dedicated Full-Screen Official Government Gateway (Completely covers homepage with prestigious Indian Health Portal visual styling)
     <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-b from-[#031326] via-[#081F38] to-[#031326] flex flex-col justify-between p-3 sm:p-6 md:p-8 animate-fadeIn text-slate-100 relative">
       
-      {/* Luminous Ambient Background Glows & Subtle Ashok Chakra Watermark */}
+      {/* Background Glows & Ashok Chakra Watermark */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Saffron Aura Glow at Top Center */}
         <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#FF9933]/15 rounded-full blur-3xl" />
-        
-        {/* Emerald Green Aura Glow at Bottom Right */}
         <div className="absolute -bottom-32 right-10 w-[600px] h-[350px] bg-[#138808]/15 rounded-full blur-3xl" />
-
-        {/* Ashoka Chakra Center Watermark Graphic */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[650px] opacity-[0.03] flex items-center justify-center">
-          <svg viewBox="0 0 100 100" className="w-full h-full text-white animate-spin-slow">
-            <circle cx="50" cy="50" r="45" stroke="currentColor" strokeWidth="2" fill="none" />
-            <circle cx="50" cy="50" r="10" stroke="currentColor" strokeWidth="2" fill="none" />
-            {Array.from({ length: 24 }).map((_, i) => (
-              <line
-                key={i}
-                x1="50"
-                y1="50"
-                x2={50 + 45 * Math.cos((i * 15 * Math.PI) / 180)}
-                y2={50 + 45 * Math.sin((i * 15 * Math.PI) / 180)}
-                stroke="currentColor"
-                strokeWidth="1.2"
-              />
-            ))}
-          </svg>
-        </div>
       </div>
 
-      {/* 1. Official Government Header Strip */}
+      {/* 1. Header Strip */}
       <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 py-2 border-b border-slate-700/60 shrink-0">
         <div className="flex items-center gap-3">
           <IndianFlagBadge />
           <div className="flex flex-col">
             <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-400">
-              भारत सरकार · স্বাস্থ্য আৰু পৰিয়াল কল্যাণ মন্ত্ৰালয়
+              भारत सरकार · National Health Mission
             </span>
             <span className="text-[11px] text-slate-300 font-bold hidden sm:inline">
-              Ministry of Health & Family Welfare · National Health Mission (NHM)
+              Ministry of Health & Family Welfare · Smriti-Setu AI Tele-Grid
             </span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-1.5 text-xs text-amber-300 font-extrabold bg-[#004085]/60 px-3 py-1 rounded-full border border-slate-600">
-            <PhoneCall className="w-3.5 h-3.5" />
-            <span>Helpline: 14567 / 14416 (24x7)</span>
-          </div>
-
           <button
             onClick={onClose}
             className="text-xs font-bold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 px-4 py-1.5 rounded-xl border border-slate-600 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-105"
           >
-            <span>Browse Public Health Portal</span>
+            <span>Close</span>
             <X className="w-4 h-4 text-slate-400" />
           </button>
         </div>
       </div>
 
       {/* 2. Central Elevated Official Gateway Container */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto my-auto py-4 sm:py-6">
+      <div className="relative z-10 w-full max-w-4xl mx-auto my-auto py-4 sm:py-6">
         <div className="bg-white text-slate-900 rounded-3xl sm:rounded-4xl shadow-2xl border-2 border-slate-300/90 overflow-hidden flex flex-col backdrop-blur-md">
           
-          {/* Official Tiranga Tricolor Line with Center Emblem Accent */}
+          {/* Official Tiranga Tricolor Line */}
           <div className="h-2.5 w-full flex shrink-0">
             <div className="h-full w-1/3 bg-[#FF9933]" />
             <div className="h-full w-1/3 bg-white" />
             <div className="h-full w-1/3 bg-[#138808]" />
           </div>
 
-          {/* Prestige Government Modal Banner */}
-          <div className="bg-[#0A2540] text-white p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 shrink-0 relative overflow-hidden">
-            
-            {/* Background Emblem Watermark */}
-            <div className="absolute right-4 -bottom-10 opacity-10 pointer-events-none hidden lg:block">
-              <AshokaEmblem className="w-44 h-44 filter invert" />
-            </div>
-
+          {/* Modal Header */}
+          <div className="bg-[#0A2540] text-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 shrink-0 relative overflow-hidden">
             <div className="flex items-center gap-4 relative z-10">
               <div className="p-2 bg-white rounded-2xl shadow-md shrink-0">
                 <AshokaEmblem className="w-10 h-14" />
               </div>
-
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] sm:text-[11px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/40 px-2.5 py-0.5 rounded-full border border-amber-400/40">
-                    Official Government Health Gateway
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/40 px-2.5 py-0.5 rounded-full border border-amber-400/40">
+                    Official Production Authentication
                   </span>
                   <span className="bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border border-emerald-400/40">
-                    🔒 SSL 256-Bit Encrypted & HIPAA Compliant
+                    🔒 SSL 256-Bit & bcrypt Encrypted
                   </span>
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-serif font-black text-white mt-1">
-                  Smriti-Setu Cognitive Care Portal
+                  {authMode === 'login' ? 'Smriti-Setu Login' : authMode === 'signup' ? 'Create New Account' : 'Forgot Password'}
                 </h1>
-                <p className="text-xs sm:text-sm text-slate-300 font-medium">
-                  National Health Mission (NER) · Artificial Intelligence Tele-Rehabilitation Grid
-                </p>
               </div>
             </div>
 
-            <div className="hidden md:flex flex-col items-end text-right text-xs text-slate-300 relative z-10 shrink-0">
-              <span className="font-mono text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-500/40">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                ABDM National Gateway Active
-              </span>
-              <span className="text-[11px] text-slate-400 font-mono mt-1">Node: NER-GUW-HEALTH-GRID-01</span>
+            {/* Auth Mode Switcher */}
+            <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-2xl border border-slate-700">
+              <button
+                type="button"
+                onClick={() => setAuthMode('login')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  authMode === 'login' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Log In
+              </button>
+              <button
+                type="button"
+                onClick={() => setAuthMode('signup')}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
+                  authMode === 'signup' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                Sign Up
+              </button>
             </div>
           </div>
 
-          {/* Modal Content Body */}
+          {/* Modal Body */}
           <div className="p-6 sm:p-8 space-y-6 bg-[#FDFBF7]">
-            
-            <div className="text-center sm:text-left flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h2 className="font-serif font-black text-lg sm:text-xl text-slate-950 flex items-center justify-center sm:justify-start gap-2">
-                  <ShieldCheck className="w-5 h-5 text-[#004085]" />
-                  <span>Choose Your Authorized Role to Log In:</span>
-                </h2>
-                <p className="text-xs text-slate-600 font-medium mt-0.5">
-                  Select your profile below for instant authentication with pre-loaded clinical credentials:
-                </p>
-              </div>
 
-              <span className="text-[11px] font-extrabold text-[#004085] bg-blue-50 border border-blue-200 px-3 py-1 rounded-full self-center sm:self-auto">
-                ⚡ 3 Designated Roles Available
-              </span>
-            </div>
-
-            {/* 3 Dedicated Core Role Cards (Patient, Caretaker, Doctor) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {roleConfigs.map((role) => {
-                const RoleIcon = role.icon;
-                const isSelected = selectedRoleTab === role.id;
-
+            {/* 3 Core Roles Switcher */}
+            <div className="grid grid-cols-3 gap-2 bg-slate-200/80 p-1 rounded-2xl border border-slate-300">
+              {[
+                { id: 'patient' as UserRole, label: 'Patient Portal', icon: HeartPulse, color: 'text-rose-700' },
+                { id: 'caregiver' as UserRole, label: 'Caretaker Portal', icon: UserCheck, color: 'text-emerald-700' },
+                { id: 'clinician' as UserRole, label: 'Doctor Portal', icon: Stethoscope, color: 'text-blue-700' },
+              ].map((r) => {
+                const Icon = r.icon;
+                const isSelected = selectedRoleTab === r.id;
                 return (
-                  <div
-                    key={role.id}
-                    onClick={() => setSelectedRoleTab(role.id)}
-                    className={`relative p-5 rounded-3xl border-2 transition-all duration-200 cursor-pointer flex flex-col justify-between space-y-4 select-none ${
-                      isSelected
-                        ? role.activeRing
-                        : `bg-white ${role.accentBorder} hover:shadow-xl hover:scale-[1.01]`
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => setSelectedRoleTab(r.id)}
+                    className={`py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer select-none ${
+                      isSelected ? 'bg-[#004085] text-white shadow-md' : 'text-slate-700 hover:bg-white/70'
                     }`}
                   >
-                    {/* Top Pill & Icon */}
-                    <div className="flex items-center justify-between">
-                      <div className={`p-3 rounded-2xl shadow-xs transition-transform ${
-                        isSelected ? `${role.avatarBg} scale-110 shadow-md` : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        <RoleIcon className="w-6 h-6" />
-                      </div>
-
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black ${role.badgeBg}`}>
-                        {role.titleAs}
-                      </span>
-                    </div>
-
-                    {/* Persona Details */}
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 block">
-                        {role.badge}
-                      </span>
-                      <h3 className="font-serif font-black text-slate-900 text-lg leading-tight">
-                        {role.title}
-                      </h3>
-                      <p className="text-xs font-bold text-[#004085]">{role.name}</p>
-                      <p className="text-[11px] text-slate-500 font-medium">{role.location}</p>
-                    </div>
-
-                    {/* Role Description */}
-                    <p className="text-xs text-slate-600 leading-relaxed">
-                      {role.description}
-                    </p>
-
-                    {/* Instant 1-Click Login Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRoleSelectAndLogin(role.id);
-                      }}
-                      className={`w-full py-3 px-4 rounded-2xl font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95 ${role.buttonBg}`}
-                    >
-                      <span>Log In as {role.title.split(' ')[0]}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </div>
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{r.label}</span>
+                  </button>
                 );
               })}
             </div>
 
-            {/* Quick Credentials & Alternative Auth Methods Bar */}
-            <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2.5 rounded-2xl bg-slate-100 text-[#004085] shadow-xs">
-                    <IconComp className="w-5 h-5" />
+            {/* MODE 1: LOGIN FORM */}
+            {authMode === 'login' && (
+              <form onSubmit={handleLoginSubmit} className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                {loginError && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{loginError}</span>
                   </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-sm text-slate-900">
-                      Selected Profile: <strong className="text-[#004085]">{currentRoleConfig.title}</strong>
-                    </h4>
-                    <p className="text-xs text-slate-500">
-                      Pre-authenticated identity: <strong>{currentRoleConfig.name}</strong> ({currentRoleConfig.demoCred})
-                    </p>
-                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-[#004085]" />
+                    <span>Verified Email Address or Mobile Number:</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={loginIdentifier}
+                    onChange={(e) => setLoginIdentifier(e.target.value)}
+                    placeholder="e.g. user@smritisetu.gov.in or +91 98640 12345"
+                    className="w-full px-4 py-3 text-xs font-semibold text-slate-900 bg-slate-50 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                  />
                 </div>
 
-                {/* Method Switcher */}
-                <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200 self-start sm:self-auto">
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod('quick')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                      loginMethod === 'quick' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    ⚡ 1-Click Login
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setLoginMethod('abha')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
-                      loginMethod === 'abha' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
-                    }`}
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5 inline mr-1 text-amber-300" />
-                    ABHA ID
-                  </button>
-                </div>
-              </div>
-
-              {/* METHOD 1: 1-Click Direct Launch */}
-              {loginMethod === 'quick' && (
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-200/80">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-emerald-700" />
-                      <strong className="text-xs font-black text-emerald-950">
-                        Zero-friction Verified Authentication Ready
-                      </strong>
-                    </div>
-                    <p className="text-xs text-emerald-800 font-medium">
-                      Press below to enter the {currentRoleConfig.title} with full clinical session sync.
-                    </p>
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-[#004085]" />
+                      <span>Password:</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setAuthMode('forgot_password')}
+                      className="text-xs font-bold text-[#004085] hover:underline"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
+                  <input
+                    type="password"
+                    required
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    className="w-full px-4 py-3 text-xs font-semibold text-slate-900 bg-slate-50 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                  />
+                </div>
 
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => handleRoleSelectAndLogin(selectedRoleTab)}
-                    className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#004085] hover:bg-[#0A2540] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95 shrink-0"
+                    type="submit"
+                    disabled={loginLoading}
+                    className="w-full py-3.5 px-6 rounded-2xl bg-[#004085] hover:bg-[#0A2540] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
                   >
-                    <span>Launch {currentRoleConfig.title}</span>
+                    {loginLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                    <span>Log In to {selectedRoleTab.toUpperCase()} Portal</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
-              )}
+              </form>
+            )}
 
-              {/* METHOD 2: ABHA National Health ID Form */}
-              {loginMethod === 'abha' && (
-                <form onSubmit={handleFormSubmit} className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        ABHA Health ID / National ID
+            {/* MODE 2: REAL SIGNUP FORM WITH OTP VERIFICATION & LIVE PASSWORD RULES */}
+            {authMode === 'signup' && (
+              <form onSubmit={handleSignupSubmit} className="space-y-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                {signupError && (
+                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{signupError}</span>
+                  </div>
+                )}
+
+                {signupNotice && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs font-black flex items-center gap-2 animate-pulse">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{signupNotice}</span>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Full Name */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. Ranjit Borthakur"
+                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
+                    />
+                  </div>
+
+                  {/* Email & OTP Verification */}
+                  <div className="sm:col-span-2 space-y-2 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-[#004085]" />
+                        <span>Email Address:</span>
                       </label>
+                      {emailVerified && (
+                        <span className="text-xs font-black text-emerald-700 flex items-center gap-1 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Verified
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        required
+                        disabled={emailVerified}
+                        value={signupEmail}
+                        onChange={(e) => setSignupEmail(e.target.value)}
+                        placeholder="user@smritisetu.gov.in"
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none"
+                      />
+                      {!emailVerified && (
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOtp}
+                          disabled={emailCooldown > 0}
+                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50"
+                        >
+                          {emailCooldown > 0 ? `Resend (${emailCooldown}s)` : emailOtpSent ? 'Resend OTP' : 'Send Email OTP'}
+                        </button>
+                      )}
+                    </div>
+
+                    {emailOtpSent && !emailVerified && (
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          value={emailOtp}
+                          onChange={(e) => setEmailOtp(e.target.value)}
+                          placeholder="Enter 6-digit Email OTP"
+                          className="w-full px-3 py-1.5 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyEmailOtp}
+                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
+                        >
+                          Verify OTP
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Mobile Number & OTP Verification */}
+                  <div className="sm:col-span-2 space-y-2 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                        <Smartphone className="w-3.5 h-3.5 text-[#004085]" />
+                        <span>Mobile Number (with Country Code):</span>
+                      </label>
+                      {mobileVerified && (
+                        <span className="text-xs font-black text-emerald-700 flex items-center gap-1 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Verified
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       <input
                         type="text"
                         required
-                        value={abhaId}
-                        onChange={(e) => setAbhaId(e.target.value)}
-                        placeholder="e.g. ABHA-NER-986401"
-                        className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                        disabled={mobileVerified}
+                        value={signupMobile}
+                        onChange={(e) => setSignupMobile(e.target.value)}
+                        placeholder="+91 98640 12345"
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none"
                       />
+                      {!mobileVerified && (
+                        <button
+                          type="button"
+                          onClick={handleSendMobileOtp}
+                          disabled={mobileCooldown > 0}
+                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50"
+                        >
+                          {mobileCooldown > 0 ? `Resend (${mobileCooldown}s)` : mobileOtpSent ? 'Resend OTP' : 'Send SMS OTP'}
+                        </button>
+                      )}
                     </div>
+
+                    {mobileOtpSent && !mobileVerified && (
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          value={mobileOtp}
+                          onChange={(e) => setMobileOtp(e.target.value)}
+                          placeholder="Enter 6-digit SMS OTP"
+                          className="w-full px-3 py-1.5 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyMobileOtp}
+                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
+                        >
+                          Verify OTP
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Password & Confirm Password */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={signupPassword}
+                      onChange={(e) => setSignupPassword(e.target.value)}
+                      placeholder="Max 8 characters"
+                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Confirm Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter password"
+                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Live Requirement Indicators */}
+                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1 text-xs">
+                  <span className="font-extrabold text-amber-900 block mb-1">Password Requirements:</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-bold">
+                    <span className={currentRules.maxLength ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.maxLength ? '✓' : '○'} Max 8 chars
+                    </span>
+                    <span className={currentRules.hasUppercase ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.hasUppercase ? '✓' : '○'} 1 Uppercase (A-Z)
+                    </span>
+                    <span className={currentRules.hasLowercase ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.hasLowercase ? '✓' : '○'} 1 Lowercase (a-z)
+                    </span>
+                    <span className={currentRules.hasNumber ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.hasNumber ? '✓' : '○'} 1 Digit (0-9)
+                    </span>
+                    <span className={currentRules.hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.hasSpecialChar ? '✓' : '○'} 1 Symbol (!@#$)
+                    </span>
+                    <span className={currentRules.noSpaces ? 'text-emerald-700' : 'text-slate-500'}>
+                      {currentRules.noSpaces ? '✓' : '○'} No spaces
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={signupLoading || !emailVerified || !mobileVerified || !isPasswordValid}
+                  className="w-full py-3.5 px-6 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                  <span>Create Account & Log In</span>
+                </button>
+              </form>
+            )}
+
+            {/* MODE 3: FORGOT PASSWORD FLOW */}
+            {authMode === 'forgot_password' && (
+              <form onSubmit={handleResetPasswordSubmit} className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                {forgotError && (
+                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>{forgotError}</span>
+                  </div>
+                )}
+
+                {forgotMessage && (
+                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{forgotMessage}</span>
+                  </div>
+                )}
+
+                {!forgotVerified ? (
+                  <div className="space-y-3">
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 mb-1">
-                        Passcode / OTP
-                      </label>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">Registered Email or Mobile Number</label>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          required
+                          value={forgotIdentifier}
+                          onChange={(e) => setForgotIdentifier(e.target.value)}
+                          placeholder="user@smritisetu.gov.in or +91 98640 12345"
+                          className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSendForgotOtp}
+                          className="px-4 py-2.5 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white font-bold text-xs shrink-0 cursor-pointer"
+                        >
+                          Send OTP
+                        </button>
+                      </div>
+                    </div>
+
+                    {forgotOtpSent && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={forgotOtp}
+                          onChange={(e) => setForgotOtp(e.target.value)}
+                          placeholder="Enter 6-digit OTP"
+                          className="w-full px-3.5 py-2 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleVerifyForgotOtp}
+                          className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
+                        >
+                          Verify OTP
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-800 mb-1">New Password</label>
                       <input
                         type="password"
                         required
-                        value={passcode}
-                        onChange={(e) => setPasscode(e.target.value)}
-                        placeholder="••••"
-                        className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Enter new password"
+                        className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
                       />
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-[11px] font-semibold text-slate-500 flex items-center gap-1">
-                      <Lock className="w-3.5 h-3.5 text-emerald-600" />
-                      Verified by National Health Authority (NHA)
-                    </span>
+
                     <button
                       type="submit"
-                      className="bg-[#004085] hover:bg-[#0A2540] text-white px-5 py-2.5 rounded-xl font-bold text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+                      disabled={forgotLoading || !isPasswordValid}
+                      className="w-full py-3 px-6 rounded-2xl bg-[#004085] hover:bg-[#0A2540] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                     >
-                      <span>Sign In to {currentRoleConfig.title}</span>
-                      <ArrowRight className="w-4 h-4" />
+                      {forgotLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                      <span>Update Password & Log In</span>
                     </button>
                   </div>
-                </form>
-              )}
-
-            </div>
+                )}
+              </form>
+            )}
 
           </div>
 
@@ -429,18 +774,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               onClick={onClose}
               className="text-[#004085] hover:underline font-bold flex items-center gap-1 cursor-pointer"
             >
-              <span>Skip login & browse public health portal</span>
+              <span>Browse Public Health Portal</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
 
         </div>
-      </div>
-
-      {/* 3. Bottom Legal Disclaimer & Tele-Grid Accreditation */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto py-2 text-center text-[11px] text-slate-400 font-medium shrink-0 flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>© 2026 Ministry of Health & Family Welfare, Government of India. All rights reserved.</span>
-        <span className="font-mono text-amber-400">Northeast India Geriatric Health Grid · 8 Regional State Nodes Active</span>
       </div>
 
     </div>

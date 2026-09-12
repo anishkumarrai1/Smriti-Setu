@@ -43,10 +43,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { useMemoryStore } from '../../stores/useMemoryStore';
 import { useReminderStore } from '../../stores/useReminderStore';
-<<<<<<< HEAD
-=======
 import { useDeviceStore } from '../../stores/useDeviceStore';
->>>>>>> origin/main
 import { useActivityStore } from '../../stores/useActivityStore';
 import { Button } from '../../components/common/Button';
 import { Modal } from '../../components/common/Modal';
@@ -58,7 +55,7 @@ export const CaregiverDashboard: React.FC = () => {
   const { selectedPatient } = useAuthStore();
   const { memories, addMemory } = useMemoryStore();
   const { reminders, addReminder, updateReminderState } = useReminderStore();
-<<<<<<< HEAD
+  const { device } = useDeviceStore();
   const { sessionHistory } = useActivityStore();
 
   // Clinical Report Modal State
@@ -74,7 +71,6 @@ export const CaregiverDashboard: React.FC = () => {
       ? sessionHistory
       : sessionHistory.filter(s => s.activityType === selectedActivityFilter);
     
-    // Sort chronologically (oldest to newest) for proper zigzag graph progression
     const sorted = [...filtered].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return sorted.map((s, idx) => {
@@ -121,16 +117,12 @@ export const CaregiverDashboard: React.FC = () => {
     const sumMs = sessionHistory.reduce((acc, s) => acc + s.avgResponseTimeMs, 0);
     return (sumMs / sessionHistory.length / 1000).toFixed(1);
   }, [sessionHistory]);
-=======
-  const { device } = useDeviceStore();
-  const { sessionHistory, currentDifficulty } = useActivityStore();
->>>>>>> origin/main
 
   // Modal States
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
   const [isAddReminderOpen, setIsAddReminderOpen] = useState(false);
 
-  // Dynamic Per-Game Behavioral Statistics calculated directly from real-time session history
+  // Dynamic Per-Game Behavioral Statistics
   const gameStats = useMemo(() => {
     const gameDefs = [
       { id: 'photo_puzzle', name: 'Family Photo Puzzle', icon: Puzzle, color: 'amber' },
@@ -267,30 +259,24 @@ export const CaregiverDashboard: React.FC = () => {
               className="w-20 h-20 md:w-22 md:h-22 rounded-2xl object-cover border-2 border-[#003366]/20 shadow-sm shrink-0"
             />
             <div>
-<<<<<<< HEAD
               <span className="text-xs font-black uppercase tracking-wider text-[#003366]">
                 Caregiver Monitoring Portal · Government of India
-=======
-              <span className="text-xs font-bold uppercase tracking-wider text-forest-800">
-                {t('roles.caregiver', 'Caregiver Monitoring Portal')}
->>>>>>> origin/main
               </span>
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mt-0.5">
                 {selectedPatient.name}
               </h2>
-<<<<<<< HEAD
               <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
                 Age {selectedPatient.age} · {selectedPatient.hierarchy.district}, {selectedPatient.hierarchy.state} · ABHA: <strong className="text-slate-900 font-mono">9864-0129-4402</strong>
-=======
-              <p className="text-sm text-charcoal-600 font-medium mt-1">
-                {selectedPatient.age} · {selectedPatient.hierarchy.district}, {selectedPatient.hierarchy.state}
->>>>>>> origin/main
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-<<<<<<< HEAD
+            <div className="px-4 py-2 rounded-full bg-white border border-slate-300 text-xs font-bold text-slate-800 flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-emerald-700" />
+              <span>ESP32 Console: <strong className="uppercase">{device.status}</strong></span>
+            </div>
+
             <Button
               variant="emerald"
               size="md"
@@ -303,21 +289,11 @@ export const CaregiverDashboard: React.FC = () => {
 
             <Button variant="primary" size="md" icon={<Plus className="w-4 h-4" />} onClick={() => setIsAddMemoryOpen(true)}>
               Add Memory
-=======
-            <div className="px-4 py-2 rounded-full bg-white border border-ivory-300 text-xs font-bold text-charcoal-800 flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-forest-700" />
-              <span>{t('hardware.title', 'ESP32 Console')}: <strong className="uppercase">{device.status}</strong></span>
-            </div>
-
-            <Button variant="primary" icon={<Plus className="w-4 h-4" />} onClick={() => setIsAddMemoryOpen(true)}>
-              {t('memoryGarden.addMemory', 'Add Memory')}
->>>>>>> origin/main
             </Button>
           </div>
         </div>
       </section>
 
-<<<<<<< HEAD
       {/* 2. PATIENT COGNITIVE BEHAVIORAL INTELLIGENCE SUITE (ALL GAMES) */}
       <section className="bg-white rounded-3xl p-6 md:p-8 border border-slate-300 shadow-sm space-y-6">
         {/* Doctor Approval & Clinical Staging Banner */}
@@ -518,7 +494,7 @@ export const CaregiverDashboard: React.FC = () => {
                   tickFormatter={(v) => `${v}s`}
                 />
                 <Tooltip
-                  content={({ active, payload, label }) => {
+                  content={({ active, payload }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       return (
@@ -555,7 +531,7 @@ export const CaregiverDashboard: React.FC = () => {
                 {(selectedMetric === 'accuracy' || selectedMetric === 'all') && (
                   <Line
                     yAxisId="left"
-                    type="linear" // Sharp linear zigzag lines
+                    type="linear"
                     dataKey="accuracy"
                     name="Accuracy (%)"
                     stroke="#15803D"
@@ -567,7 +543,7 @@ export const CaregiverDashboard: React.FC = () => {
                 {(selectedMetric === 'responseTime' || selectedMetric === 'all') && (
                   <Line
                     yAxisId="right"
-                    type="linear" // Sharp linear zigzag lines
+                    type="linear"
                     dataKey="responseTimeSec"
                     name="Response Time (seconds)"
                     stroke="#2563EB"
@@ -608,13 +584,6 @@ export const CaregiverDashboard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {gameStats.map((game) => {
               const IconComp = game.icon;
-              const colorClasses = {
-                amber: 'bg-amber-100 text-amber-900 text-amber-700 hover:border-amber-300',
-                emerald: 'bg-emerald-100 text-emerald-900 text-emerald-700 hover:border-emerald-300',
-                purple: 'bg-purple-100 text-purple-900 text-purple-700 hover:border-purple-300',
-                blue: 'bg-blue-100 text-blue-900 text-blue-700 hover:border-blue-300',
-                rose: 'bg-rose-100 text-rose-900 text-rose-700 hover:border-rose-300',
-              }[game.color] || 'bg-slate-100 text-slate-900 text-slate-700 hover:border-slate-300';
 
               return (
                 <div
@@ -730,21 +699,6 @@ export const CaregiverDashboard: React.FC = () => {
             </table>
           </div>
         </div>
-=======
-      {/* 2. CLINICAL INSIGHTS & AI OBSERVATIONS */}
-      <section className="bg-gradient-to-r from-forest-900 to-forest-800 text-white rounded-3xl p-6 md:p-8 shadow-photo space-y-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-gold-400" />
-          <h3 className="font-serif font-bold text-xl text-ivory-50">{t('reports.aiObservationTitle', 'AI-assisted Observation — Care Summary')}</h3>
-        </div>
-        <p className="text-ivory-200 text-base leading-relaxed max-w-4xl">
-          {selectedPatient.name.split(' ')[0]} has completed <strong>{sessionHistory.length} cognitive game sessions</strong> with <strong>{sessionHistory.length > 0 ? Math.round(sessionHistory.reduce((s, x) => s + x.accuracyPercentage, 0) / sessionHistory.length) : 85}% overall accuracy</strong> and an average response time of <strong>{sessionHistory.length > 0 ? (sessionHistory.reduce((s, x) => s + (x.avgResponseTimeMs || 3000), 0) / sessionHistory.length / 1000).toFixed(1) : '3.1'}s</strong>. Current cognitive calibration is active on <strong>{currentDifficulty.toUpperCase()}</strong>.
-        </p>
-        <p className="text-xs font-semibold text-gold-300 flex items-center gap-1 pt-1">
-          <AlertCircle className="w-4 h-4 text-gold-400" />
-          <span>AI-assisted observation from live gameplay telemetry — not a medical diagnosis.</span>
-        </p>
->>>>>>> origin/main
       </section>
 
       {/* 3. MEMORY GARDEN HIGHLIGHTS & REMINDERS SUITE */}
@@ -851,7 +805,6 @@ export const CaregiverDashboard: React.FC = () => {
       {/* Add Memory Modal */}
       <Modal isOpen={isAddMemoryOpen} onClose={() => setIsAddMemoryOpen(false)} title="Add Memory Entry">
         <form onSubmit={handleCreateMemory} className="space-y-4">
-          {/* Photo Upload Zone */}
           <div>
             <label className="block text-sm font-semibold text-charcoal-800 mb-1 flex items-center justify-between">
               <span>Memory Photograph</span>

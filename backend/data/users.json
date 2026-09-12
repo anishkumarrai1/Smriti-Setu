@@ -1,0 +1,72 @@
+[
+  {
+    "id": "usr-admin-001",
+    "fullName": "NHA Regional Administrator",
+    "email": "admin@smritisetu.gov.in",
+    "emailVerified": true,
+    "mobileNumber": "+919999900000",
+    "mobileVerified": true,
+    "passwordHash": "$2b$10$zYRF9sQTSOM.pdlCaUKCWOkh259PHra35Oax9v.ZGLSkWOevb78KG",
+    "role": "admin",
+    "assignedRole": "clinician",
+    "accountStatus": "active",
+    "createdAt": "2026-09-12T16:56:30.802Z",
+    "updatedAt": "2026-09-12T19:17:23.178Z",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+    "hierarchy": {
+      "region": "North Eastern Region",
+      "state": "Assam",
+      "district": "Kamrup Metropolitan",
+      "facilityId": "fac-ghy-01",
+      "facilityName": "Guwahati Regional Cognitive Care Center"
+    },
+    "lastLoginAt": "2026-09-12T19:17:23.178Z",
+    "lastActivityAt": "2026-09-12T19:17:23.178Z"
+  },
+  {
+    "id": "pat-ner-001",
+    "fullName": "Ranjit Borthakur",
+    "email": "patient@smritisetu.gov.in",
+    "emailVerified": true,
+    "mobileNumber": "+919864012345",
+    "mobileVerified": true,
+    "passwordHash": "$2b$10$gOdhT2893uaho5hPHyeDpumDfeglR4qaLuCe1A/oSPC9EHoELiL.q",
+    "role": "user",
+    "assignedRole": "patient",
+    "accountStatus": "active",
+    "createdAt": "2026-09-12T16:56:30.907Z",
+    "updatedAt": "2026-09-12T19:11:04.505Z",
+    "lastLoginAt": "2026-09-12T19:11:04.505Z",
+    "lastActivityAt": "2026-09-12T19:11:04.505Z"
+  },
+  {
+    "id": "cg-ner-002",
+    "fullName": "Ananya Borthakur",
+    "email": "caregiver@smritisetu.gov.in",
+    "emailVerified": true,
+    "mobileNumber": "+919864099887",
+    "mobileVerified": true,
+    "passwordHash": "$2b$10$jTCt2iYq2pQ8tYpfsLZv6.T9g9krOZ3iIddG2jNNJOIAZ3X/Z8SNu",
+    "role": "user",
+    "assignedRole": "caregiver",
+    "accountStatus": "active",
+    "createdAt": "2026-09-12T16:56:31.002Z",
+    "updatedAt": "2026-09-12T16:56:31.002Z"
+  },
+  {
+    "id": "doc-ner-003",
+    "fullName": "Dr. Bikash Barua",
+    "email": "doctor@smritisetu.gov.in",
+    "emailVerified": true,
+    "mobileNumber": "+919864077665",
+    "mobileVerified": true,
+    "passwordHash": "$2b$10$M93Z5wHH4XQ.BtCU58s6se.mwucafoMO1XrIUmgbpAzGIkAszPddu",
+    "role": "user",
+    "assignedRole": "clinician",
+    "accountStatus": "active",
+    "createdAt": "2026-09-12T16:56:31.095Z",
+    "updatedAt": "2026-09-12T19:17:23.031Z",
+    "lastLoginAt": "2026-09-12T19:17:23.031Z",
+    "lastActivityAt": "2026-09-12T19:17:23.031Z"
+  }
+]

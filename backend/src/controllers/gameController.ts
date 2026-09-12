@@ -26,7 +26,7 @@ export const submitSessionResult = (req: Request, res: Response) => {
 
 export const getSessionHistory = (req: Request, res: Response) => {
   try {
-    const patientId = req.query.patientId as string | undefined;
+    const patientId = (req.params.patientId as string) || (req.query.patientId as string) || undefined;
     const history = dataStore.getSessions(patientId);
     res.json(history);
   } catch (error: any) {

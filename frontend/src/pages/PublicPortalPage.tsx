@@ -20,9 +20,10 @@ import { UserRole } from '../types';
 
 interface PublicPortalPageProps {
   onOpenAppAuth: (role?: UserRole) => void;
+  onGoToLogin?: () => void;
 }
 
-export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAuth }) => {
+export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAuth, onGoToLogin }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [stateFilter, setStateFilter] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +75,14 @@ export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAut
     onOpenAppAuth(role);
   };
 
+  const handleAccessPlatform = () => {
+    if (onGoToLogin) {
+      onGoToLogin();
+    } else {
+      setIsAuthModalOpen(true);
+    }
+  };
+
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-all bg-slate-50 text-slate-900 ${
@@ -88,7 +97,7 @@ export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAut
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         onSearch={handleSearchSubmit}
-        onOpenAppAuth={() => setIsAuthModalOpen(true)}
+        onOpenAppAuth={handleAccessPlatform}
       />
 
       {/* 3. Scrolling Latest Updates Ticker */}
@@ -102,11 +111,11 @@ export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAut
             <GovHeroSlider
               onFindFacility={handleFindFacility}
               onExploreServices={handleExploreServices}
-              onAccessSmritiSetu={() => setIsAuthModalOpen(true)}
+              onAccessSmritiSetu={handleAccessPlatform}
             />
 
             {/* Featured Smriti-Setu Cognitive Care Mission */}
-            <SmritiSetuSection onAccessPlatform={() => setIsAuthModalOpen(true)} />
+            <SmritiSetuSection onAccessPlatform={handleAccessPlatform} />
 
             {/* Latest Regional Updates & News */}
             <UpdatesSection />
@@ -126,7 +135,7 @@ export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAut
         )}
 
         {activeTab === 'smriti-setu' && (
-          <SmritiSetuSection onAccessPlatform={() => setIsAuthModalOpen(true)} />
+          <SmritiSetuSection onAccessPlatform={handleAccessPlatform} />
         )}
 
         {activeTab === 'programs' && <ProgramsSection />}
@@ -144,7 +153,7 @@ export const PublicPortalPage: React.FC<PublicPortalPageProps> = ({ onOpenAppAut
       {/* 7. Official Government Footer */}
       <GovFooter />
 
-      {/* 8. Role Auth Modal */}
+      {/* 8. Role Auth Modal (Fallback) */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}

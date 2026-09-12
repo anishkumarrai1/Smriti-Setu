@@ -66,7 +66,11 @@ class BackendDataStore {
     this.patients = new Map(samplePatientsList.map((p) => [p.id, { ...p }]));
     this.activities = [...initialActivities];
     this.memories = [...initialMemories];
-    this.devices = new Map([[initialDevice.deviceId, { ...initialDevice }]]);
+    this.devices = new Map([
+      [initialDevice.deviceId, { ...initialDevice }],
+      ['esp32-ner-001', { ...initialDevice, deviceId: 'esp32-ner-001' }],
+      ['ESP32-NER-GW-042', { ...initialDevice, deviceId: 'ESP32-NER-GW-042' }],
+    ]);
     this.deviceEvents = [...initialDeviceLogs];
     this.reminders = [...initialReminders];
     this.sessions = [...initialSessions];
@@ -88,6 +92,15 @@ class BackendDataStore {
 
   public getPatientById(id: string): PatientProfile | undefined {
     return this.patients.get(id);
+  }
+
+  public getAllPatients(): PatientProfile[] {
+    return Array.from(this.patients.values());
+  }
+
+  public addPatient(patient: PatientProfile): PatientProfile {
+    this.patients.set(patient.id, patient);
+    return patient;
   }
 
   public updatePatient(id: string, updates: Partial<PatientProfile>): PatientProfile | undefined {
@@ -243,7 +256,18 @@ class BackendDataStore {
 
   // Hardware ESP32 Devices
   public getDevice(deviceId: string): ESP32Device | undefined {
-    return this.devices.get(deviceId);
+    if (this.devices.has(deviceId)) return this.devices.get(deviceId);
+    const lower = deviceId.toLowerCase();
+    for (const [k, v] of this.devices.entries()) {
+      if (k.toLowerCase() === lower) return v;
+    }
+    // Fallback device profile
+    const fallback: ESP32Device = {
+      ...initialDevice,
+      deviceId,
+    };
+    this.devices.set(deviceId, fallback);
+    return fallback;
   }
 
   public getDeviceEvents(deviceId?: string): DeviceEvent[] {

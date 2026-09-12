@@ -13,6 +13,9 @@ router.post('/results', submitSessionResult);
 // GET /api/sessions?patientId=...
 router.get('/sessions', getSessionHistory);
 
+// GET /api/sessions/:patientId
+router.get('/sessions/:patientId', getSessionHistory);
+
 // GET /api/questions
 router.get('/questions', getGameQuestions);
 
