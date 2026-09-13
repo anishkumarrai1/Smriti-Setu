@@ -98,7 +98,7 @@ class AuthService {
       console.log(`[SEED] Initial Admin account initialized: ${adminEmail}`);
     }
 
-    // Seed Patient Account
+    // Seed Patient 1: Ranjit Borthakur
     if (!this.findByEmail('patient@smritisetu.gov.in')) {
       const passwordHash = await bcrypt.hash('Patient12!', 10);
       const patientUser: UserRecord = {
@@ -114,9 +114,104 @@ class AuthService {
         accountStatus: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+        hierarchy: {
+          region: 'North Eastern Region',
+          state: 'Assam',
+          district: 'Kamrup Metropolitan',
+          facilityId: 'fac-ghy-01',
+          facilityName: 'Guwahati Regional Cognitive Care Center',
+        },
       };
       this.usersMap.set(patientUser.id, patientUser);
       console.log(`[SEED] Patient account initialized: patient@smritisetu.gov.in`);
+    }
+
+    // Seed Patient 2: Hemanta Saikia
+    if (!this.findByEmail('hemanta.saikia@smritisetu.gov.in')) {
+      const passwordHash = await bcrypt.hash('Patient12!', 10);
+      const patientUser: UserRecord = {
+        id: 'pat-ner-002',
+        fullName: 'Hemanta Saikia',
+        email: 'hemanta.saikia@smritisetu.gov.in',
+        emailVerified: true,
+        mobileNumber: '+919435056789',
+        mobileVerified: true,
+        passwordHash,
+        role: 'user',
+        assignedRole: 'patient',
+        accountStatus: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+        hierarchy: {
+          region: 'North Eastern Region',
+          state: 'Assam',
+          district: 'Jorhat',
+          facilityId: 'fac-ghy-01',
+          facilityName: 'Guwahati Regional Cognitive Care Center',
+        },
+      };
+      this.usersMap.set(patientUser.id, patientUser);
+      console.log(`[SEED] Patient account initialized: hemanta.saikia@smritisetu.gov.in`);
+    }
+
+    // Seed Patient 3: Moarenla Jamir
+    if (!this.findByEmail('moarenla.jamir@smritisetu.gov.in')) {
+      const passwordHash = await bcrypt.hash('Patient12!', 10);
+      const patientUser: UserRecord = {
+        id: 'pat-ner-003',
+        fullName: 'Moarenla Jamir',
+        email: 'moarenla.jamir@smritisetu.gov.in',
+        emailVerified: true,
+        mobileNumber: '+919436012890',
+        mobileVerified: true,
+        passwordHash,
+        role: 'user',
+        assignedRole: 'patient',
+        accountStatus: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+        hierarchy: {
+          region: 'North Eastern Region',
+          state: 'Nagaland',
+          district: 'Kohima',
+          facilityId: 'fac-ghy-01',
+          facilityName: 'Guwahati Regional Cognitive Care Center',
+        },
+      };
+      this.usersMap.set(patientUser.id, patientUser);
+      console.log(`[SEED] Patient account initialized: moarenla.jamir@smritisetu.gov.in`);
+    }
+
+    // Seed Patient 4: Tenzing Norbu
+    if (!this.findByEmail('tenzing.norbu@smritisetu.gov.in')) {
+      const passwordHash = await bcrypt.hash('Patient12!', 10);
+      const patientUser: UserRecord = {
+        id: 'pat-ner-004',
+        fullName: 'Tenzing Norbu',
+        email: 'tenzing.norbu@smritisetu.gov.in',
+        emailVerified: true,
+        mobileNumber: '+919436098712',
+        mobileVerified: true,
+        passwordHash,
+        role: 'user',
+        assignedRole: 'patient',
+        accountStatus: 'active',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+        hierarchy: {
+          region: 'North Eastern Region',
+          state: 'Arunachal Pradesh',
+          district: 'Tawang',
+          facilityId: 'fac-ghy-01',
+          facilityName: 'Guwahati Regional Cognitive Care Center',
+        },
+      };
+      this.usersMap.set(patientUser.id, patientUser);
+      console.log(`[SEED] Patient account initialized: tenzing.norbu@smritisetu.gov.in`);
     }
 
     // Seed Caregiver Account

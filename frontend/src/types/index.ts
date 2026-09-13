@@ -20,12 +20,14 @@ export interface RegionalHierarchy {
   facilityName: string;
 }
 
+export type RegionalLanguage = 'en' | 'hi' | 'as' | 'bn' | 'ne' | 'brx';
+
 export interface PatientProfile {
   id: string;
   name: string;
   age: number;
   gender: 'male' | 'female' | 'other';
-  preferredLanguage: 'en' | 'hi' | 'as' | 'bn';
+  preferredLanguage: RegionalLanguage;
   hierarchy: RegionalHierarchy;
   primaryCaregiverName: string;
   primaryCaregiverContact: string;

@@ -3,12 +3,12 @@ import {
   Clock, 
   ArrowRight, 
   Sparkles,
-  User,
-  RefreshCw
+  Camera,
+  Edit3
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { VoiceButton } from '../../components/common/VoiceButton';
-import { PatientSwitcherModal } from '../../components/common/PatientSwitcherModal';
+import { PatientProfileModal } from '../../components/common/PatientProfileModal';
 import { ActivityType } from '../../types';
 
 interface PatientDashboardProps {
@@ -16,8 +16,8 @@ interface PatientDashboardProps {
 }
 
 export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActivity }) => {
-  const { selectedPatient, patients } = useAuthStore();
-  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  const { selectedPatient } = useAuthStore();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const patientName = selectedPatient?.name || 'Ranjit Borthakur';
   const greetingMessage = `Good morning, ${patientName}. Welcome to your cognitive memory activities. Choose a game below to begin today's guided session.`;
@@ -84,7 +84,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
       <div className="relative rounded-3xl overflow-hidden shadow-md border border-slate-300 bg-slate-950 text-white min-h-[260px] md:min-h-[290px] flex items-end">
         {/* Background Image: North East Scenic Hill Landscape */}
         <img
-          src={`${((import.meta as any).env?.BASE_URL || '/')}ne_landscape_hero.png`}
+          src={`${baseUrl}ne_landscape_hero.png`}
           alt="North East Scenic Hill Landscape"
           className="absolute inset-0 w-full h-full object-cover opacity-60 object-center"
         />
@@ -95,14 +95,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
             <span className="px-3 py-0.5 bg-amber-400 text-slate-950 font-black text-xs rounded-md uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
               <Sparkles className="w-3.5 h-3.5" /> Senior Patient Care Node
             </span>
+            
+            {/* Dedicated Profile & Photo Editing Action */}
             <button
-              onClick={() => setIsSwitcherOpen(true)}
-              className="px-3 py-0.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-md backdrop-blur-xs flex items-center gap-1 border border-white/30 transition-all cursor-pointer"
-              title="Switch patient or add new patient"
+              onClick={() => setIsProfileModalOpen(true)}
+              className="px-3 py-0.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-md backdrop-blur-xs flex items-center gap-1.5 border border-white/30 transition-all cursor-pointer hover:scale-105 active:scale-95 shadow-xs"
+              title="Edit your personal details and upload profile photo"
             >
-              <User className="w-3.5 h-3.5 text-amber-300" />
-              <span>Switch Patient ({patients.length} available)</span>
-              <RefreshCw className="w-3 h-3 ml-0.5 text-amber-300" />
+              <Camera className="w-3.5 h-3.5 text-amber-300" />
+              <span>Edit My Profile & Photo</span>
+              <Edit3 className="w-3 h-3 text-amber-300 ml-0.5" />
             </button>
           </div>
 
@@ -188,10 +190,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
         </div>
       </div>
 
-      {/* Patient Switcher Modal */}
-      <PatientSwitcherModal
-        isOpen={isSwitcherOpen}
-        onClose={() => setIsSwitcherOpen(false)}
+      {/* Patient Profile Editing & Photo Upload Modal */}
+      <PatientProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
 
     </div>

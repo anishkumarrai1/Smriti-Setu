@@ -7,6 +7,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { useAccessibilityStore } from '../../stores/useAccessibilityStore';
 import { AshokaEmblem, IndianFlagBadge } from '../common/GovEmblem';
 import { PatientSwitcherModal } from '../common/PatientSwitcherModal';
+import { PatientProfileModal } from '../common/PatientProfileModal';
 
 interface HeaderProps {
   activeTab: string;
@@ -19,6 +20,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
   const { role, systemRole, selectedPatient, user } = useAuthStore();
   const { elderlyMode } = useAccessibilityStore();
   const [isPatientModalOpen, setIsPatientModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const patientNav = [
     { id: 'home', labelKey: 'navigation.home' },
@@ -150,20 +152,40 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
           </nav>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsPatientModalOpen(true)}
-              className="flex items-center gap-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs transition-all cursor-pointer group"
-              title="Click to switch active patient or register a new patient"
-            >
-              <User className="w-3.5 h-3.5 text-[#003366]" />
-              <span>
-                Active Patient: <strong className="text-[#003366] group-hover:underline">{selectedPatient.name}</strong>
-              </span>
-              <span className="text-[10px] bg-blue-50 text-[#003366] border border-blue-200 px-1.5 py-0.5 rounded font-black flex items-center gap-1">
-                <RefreshCw className="w-2.5 h-2.5" />
-                <span>Switch / Add</span>
-              </span>
-            </button>
+            {role === 'patient' ? (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="flex items-center gap-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs transition-all cursor-pointer group"
+                title="Click to view/edit your personal profile & photo"
+              >
+                <img
+                  src={selectedPatient.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
+                  alt={selectedPatient.name}
+                  className="w-4 h-4 rounded-full object-cover border border-[#003366]"
+                />
+                <span>
+                  My Profile: <strong className="text-[#003366] group-hover:underline">{selectedPatient.name}</strong>
+                </span>
+                <span className="text-[10px] bg-blue-50 text-[#003366] border border-blue-200 px-1.5 py-0.5 rounded font-black flex items-center gap-1">
+                  Edit Profile / Photo
+                </span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsPatientModalOpen(true)}
+                className="flex items-center gap-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs transition-all cursor-pointer group"
+                title="Click to switch active patient or register a new patient"
+              >
+                <User className="w-3.5 h-3.5 text-[#003366]" />
+                <span>
+                  Active Patient: <strong className="text-[#003366] group-hover:underline">{selectedPatient.name}</strong>
+                </span>
+                <span className="text-[10px] bg-blue-50 text-[#003366] border border-blue-200 px-1.5 py-0.5 rounded font-black flex items-center gap-1">
+                  <RefreshCw className="w-2.5 h-2.5" />
+                  <span>Switch / Add</span>
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -175,10 +197,16 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
         <div className="h-full w-1/3 bg-[#138808]" />
       </div>
 
-      {/* Patient Switcher & Registration Modal */}
+      {/* Patient Switcher & Registration Modal (Caregiver/Clinician) */}
       <PatientSwitcherModal
         isOpen={isPatientModalOpen}
         onClose={() => setIsPatientModalOpen(false)}
+      />
+
+      {/* Patient Profile Editing & Photo Upload Modal (Patient Persona) */}
+      <PatientProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </header>
   );

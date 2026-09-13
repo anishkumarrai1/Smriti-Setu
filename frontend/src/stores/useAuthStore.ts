@@ -213,6 +213,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set((state) => ({
         selectedPatient: updated,
         patients: state.patients.map((p) => (p.id === updated.id ? updated : p)),
+        user: state.user ? {
+          ...state.user,
+          fullName: updated.name || state.user.fullName,
+          avatarUrl: updated.avatarUrl || state.user.avatarUrl,
+        } : null,
       }));
     } catch (err) {
       const current = get().selectedPatient;
@@ -220,6 +225,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set((state) => ({
         selectedPatient: merged,
         patients: state.patients.map((p) => (p.id === merged.id ? merged : p)),
+        user: state.user ? {
+          ...state.user,
+          fullName: merged.name || state.user.fullName,
+          avatarUrl: merged.avatarUrl || state.user.avatarUrl,
+        } : null,
       }));
     }
   },
@@ -249,32 +259,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           role: user.assignedRole || 'patient',
           isLoading: false,
         });
-        // If user is a patient, set them as the selectedPatient
+        // If user is a patient, select their profile
         if (user.assignedRole === 'patient') {
-          const patientMatch: PatientProfile = {
-            id: user.id,
-            name: user.fullName,
-            age: 70,
-            gender: 'male',
-            preferredLanguage: 'as',
-            hierarchy: user.hierarchy || {
-              region: 'North Eastern Region',
-              state: 'Assam',
-              district: 'Kamrup Metropolitan',
-              facilityId: 'fac-ghy-01',
-              facilityName: 'Guwahati Regional Cognitive Care Center',
-            },
-            primaryCaregiverName: 'Family Caregiver',
-            primaryCaregiverContact: user.mobileNumber || '+91 98640 00000',
-            attendingClinicianName: 'Dr. Devashish Phukan',
-            cognitiveProfileNote: 'Active registered patient session.',
-            elderlyModeEnabled: true,
-            avatarUrl: user.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-          };
-          set((state) => ({
-            selectedPatient: patientMatch,
-            patients: [patientMatch, ...state.patients.filter((p) => p.id !== patientMatch.id)],
-          }));
+          const matchedPatient = get().patients.find(
+            (p) => p.id === user.id || p.name.toLowerCase() === user.fullName.toLowerCase()
+          );
+          if (matchedPatient) {
+            set({ selectedPatient: matchedPatient });
+          } else {
+            const patientMatch: PatientProfile = {
+              id: user.id,
+              name: user.fullName,
+              age: 70,
+              gender: 'male',
+              preferredLanguage: 'as',
+              hierarchy: user.hierarchy || {
+                region: 'North Eastern Region',
+                state: 'Assam',
+                district: 'Kamrup Metropolitan',
+                facilityId: 'fac-ghy-01',
+                facilityName: 'Guwahati Regional Cognitive Care Center',
+              },
+              primaryCaregiverName: 'Family Caregiver',
+              primaryCaregiverContact: user.mobileNumber || '+91 98640 00000',
+              attendingClinicianName: 'Dr. Devashish Phukan',
+              cognitiveProfileNote: 'Active registered patient session.',
+              elderlyModeEnabled: true,
+              avatarUrl: user.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+            };
+            set((state) => ({
+              selectedPatient: patientMatch,
+              patients: [patientMatch, ...state.patients.filter((p) => p.id !== patientMatch.id)],
+            }));
+          }
         }
       }
     } catch (err) {
@@ -297,32 +314,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isLoading: false,
       });
 
-      // If registered patient, auto-switch selected patient
+      // If registered patient, auto-switch selected patient to this patient's profile
       if (res.user.assignedRole === 'patient') {
-        const patientMatch: PatientProfile = {
-          id: res.user.id,
-          name: res.user.fullName,
-          age: 70,
-          gender: 'male',
-          preferredLanguage: 'as',
-          hierarchy: res.user.hierarchy || {
-            region: 'North Eastern Region',
-            state: 'Assam',
-            district: 'Kamrup Metropolitan',
-            facilityId: 'fac-ghy-01',
-            facilityName: 'Guwahati Regional Cognitive Care Center',
-          },
-          primaryCaregiverName: 'Family Caregiver',
-          primaryCaregiverContact: res.user.mobileNumber || '+91 98640 00000',
-          attendingClinicianName: 'Dr. Devashish Phukan',
-          cognitiveProfileNote: 'Active registered patient session.',
-          elderlyModeEnabled: true,
-          avatarUrl: res.user.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
-        };
-        set((state) => ({
-          selectedPatient: patientMatch,
-          patients: [patientMatch, ...state.patients.filter((p) => p.id !== patientMatch.id)],
-        }));
+        const matchedPatient = get().patients.find(
+          (p) => p.id === res.user.id || p.name.toLowerCase() === res.user.fullName.toLowerCase()
+        );
+        if (matchedPatient) {
+          set({ selectedPatient: matchedPatient });
+        } else {
+          const patientMatch: PatientProfile = {
+            id: res.user.id,
+            name: res.user.fullName,
+            age: 70,
+            gender: 'male',
+            preferredLanguage: 'as',
+            hierarchy: res.user.hierarchy || {
+              region: 'North Eastern Region',
+              state: 'Assam',
+              district: 'Kamrup Metropolitan',
+              facilityId: 'fac-ghy-01',
+              facilityName: 'Guwahati Regional Cognitive Care Center',
+            },
+            primaryCaregiverName: 'Family Caregiver',
+            primaryCaregiverContact: res.user.mobileNumber || '+91 98640 00000',
+            attendingClinicianName: 'Dr. Devashish Phukan',
+            cognitiveProfileNote: 'Active registered patient session.',
+            elderlyModeEnabled: true,
+            avatarUrl: res.user.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+          };
+          set((state) => ({
+            selectedPatient: patientMatch,
+            patients: [patientMatch, ...state.patients.filter((p) => p.id !== patientMatch.id)],
+          }));
+        }
       }
 
       return res.user;
