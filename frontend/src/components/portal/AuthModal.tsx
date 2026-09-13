@@ -66,16 +66,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [emailCooldown, setEmailCooldown] = useState(0);
 
   const [signupMobile, setSignupMobile] = useState('');
-  const [mobileOtp, setMobileOtp] = useState('');
-  const [mobileVerified, setMobileVerified] = useState(false);
-  const [mobileOtpSent, setMobileOtpSent] = useState(false);
-  const [mobileCooldown, setMobileCooldown] = useState(0);
 
   const [signupPassword, setSignupPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [signupError, setSignupError] = useState<string | null>(null);
   const [signupNotice, setSignupNotice] = useState<string | null>(null);
   const [signupLoading, setSignupLoading] = useState(false);
+  const [isSendingEmailOtp, setIsSendingEmailOtp] = useState(false);
+  const [isVerifyingEmailOtp, setIsVerifyingEmailOtp] = useState(false);
 
   // Forgot Password State
   const [forgotIdentifier, setForgotIdentifier] = useState('');
@@ -90,14 +88,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Cooldown timer interval
   useEffect(() => {
     let interval: any;
-    if (emailCooldown > 0 || mobileCooldown > 0) {
+    if (emailCooldown > 0) {
       interval = setInterval(() => {
         setEmailCooldown((c) => Math.max(0, c - 1));
-        setMobileCooldown((c) => Math.max(0, c - 1));
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [emailCooldown, mobileCooldown]);
+  }, [emailCooldown]);
 
   if (!isOpen) return null;
 
@@ -125,6 +122,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
     setSignupError(null);
     setSignupNotice(null);
+    setIsSendingEmailOtp(true);
     try {
       const res: any = await authApi.sendEmailOtp(signupEmail);
       setEmailOtpSent(true);
@@ -132,7 +130,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setEmailOtp('');
       setSignupNotice(`OTP verification code sent to ${signupEmail}. Please check your inbox.`);
     } catch (err: any) {
-      setSignupError(err?.response?.data?.error || 'Failed to send email OTP.');
+      setSignupError(err?.response?.data?.error || err?.response?.data?.details || err?.message || 'Failed to send email OTP.');
+    } finally {
+      setIsSendingEmailOtp(false);
     }
   };
 
@@ -140,43 +140,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (!emailOtp) return;
     setSignupError(null);
     setSignupNotice(null);
+    setIsVerifyingEmailOtp(true);
     try {
       await authApi.verifyEmailOtp(signupEmail, emailOtp);
       setEmailVerified(true);
       setSignupNotice('✅ Email verified successfully!');
     } catch (err: any) {
-      setSignupError(err?.response?.data?.error || 'Invalid or expired email OTP.');
-    }
-  };
-
-  const handleSendMobileOtp = async () => {
-    if (!signupMobile || signupMobile.length < 8) {
-      setSignupError('Please enter a valid mobile number with country code (e.g. +91 98640 12345).');
-      return;
-    }
-    setSignupError(null);
-    setSignupNotice(null);
-    try {
-      const res: any = await authApi.sendMobileOtp(signupMobile);
-      setMobileOtpSent(true);
-      setMobileCooldown(res.cooldownSeconds || 60);
-      setMobileOtp('');
-      setSignupNotice(`OTP verification code sent via SMS to ${signupMobile}.`);
-    } catch (err: any) {
-      setSignupError(err?.response?.data?.error || 'Failed to send mobile OTP.');
-    }
-  };
-
-  const handleVerifyMobileOtp = async () => {
-    if (!mobileOtp) return;
-    setSignupError(null);
-    setSignupNotice(null);
-    try {
-      await authApi.verifyMobileOtp(signupMobile, mobileOtp);
-      setMobileVerified(true);
-      setSignupNotice('✅ Mobile number verified successfully!');
-    } catch (err: any) {
-      setSignupError(err?.response?.data?.error || 'Invalid or expired mobile OTP.');
+      setSignupError(err?.response?.data?.error || err?.message || 'Invalid or expired email OTP.');
+    } finally {
+      setIsVerifyingEmailOtp(false);
     }
   };
 
@@ -225,7 +197,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         email: signupEmail,
         emailVerified: true,
         mobileNumber: signupMobile || '',
-        mobileVerified: mobileVerified || false,
+        mobileVerified: false,
         password: signupPassword,
         assignedRole: selectedRoleTab,
       });
@@ -530,10 +502,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         <button
                           type="button"
                           onClick={handleSendEmailOtp}
-                          disabled={emailCooldown > 0}
-                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50"
+                          disabled={emailCooldown > 0 || isSendingEmailOtp}
+                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1.5"
                         >
-                          {emailCooldown > 0 ? `Resend (${emailCooldown}s)` : emailOtpSent ? 'Resend OTP' : 'Send Email OTP'}
+                          {isSendingEmailOtp && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                          {isSendingEmailOtp
+                            ? 'Sending...'
+                            : emailCooldown > 0
+                            ? `Resend (${emailCooldown}s)`
+                            : emailOtpSent
+                            ? 'Resend OTP'
+                            : 'Send Email OTP'}
                         </button>
                       )}
                     </div>
@@ -550,68 +529,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                         <button
                           type="button"
                           onClick={handleVerifyEmailOtp}
-                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
+                          disabled={isVerifyingEmailOtp || !emailOtp}
+                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                         >
-                          Verify OTP
+                          {isVerifyingEmailOtp && <RefreshCw className="w-3 h-3 animate-spin" />}
+                          {isVerifyingEmailOtp ? 'Verifying...' : 'Verify OTP'}
                         </button>
                       </div>
                     )}
                   </div>
 
-                  {/* Mobile Number & OTP Verification */}
-                  <div className="sm:col-span-2 space-y-2 p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Smartphone className="w-3.5 h-3.5 text-[#004085]" />
-                        <span>Mobile Number (with Country Code):</span>
-                      </label>
-                      {mobileVerified && (
-                        <span className="text-xs font-black text-emerald-700 flex items-center gap-1 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Verified
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        required
-                        disabled={mobileVerified}
-                        value={signupMobile}
-                        onChange={(e) => setSignupMobile(e.target.value)}
-                        placeholder="+91 98640 12345"
-                        className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none"
-                      />
-                      {!mobileVerified && (
-                        <button
-                          type="button"
-                          onClick={handleSendMobileOtp}
-                          disabled={mobileCooldown > 0}
-                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50"
-                        >
-                          {mobileCooldown > 0 ? `Resend (${mobileCooldown}s)` : mobileOtpSent ? 'Resend OTP' : 'Send SMS OTP'}
-                        </button>
-                      )}
-                    </div>
-
-                    {mobileOtpSent && !mobileVerified && (
-                      <div className="flex items-center gap-2 pt-1">
-                        <input
-                          type="text"
-                          value={mobileOtp}
-                          onChange={(e) => setMobileOtp(e.target.value)}
-                          placeholder="Enter 6-digit SMS OTP"
-                          className="w-full px-3 py-1.5 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleVerifyMobileOtp}
-                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
-                        >
-                          Verify OTP
-                        </button>
-                      </div>
-                    )}
+                  {/* Mobile Number (Direct Input) */}
+                  <div className="sm:col-span-2 space-y-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-[#004085]" />
+                      <span>Mobile Number (with Country Code):</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={signupMobile}
+                      onChange={(e) => setSignupMobile(e.target.value)}
+                      placeholder="+91 98640 12345"
+                      className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                    />
                   </div>
 
                   {/* Password & Confirm Password */}
@@ -667,7 +608,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <button
                   type="submit"
-                  disabled={signupLoading || !emailVerified || !mobileVerified || !isPasswordValid}
+                  disabled={signupLoading || !emailVerified || !signupMobile || !isPasswordValid}
                   className="w-full py-3.5 px-6 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}

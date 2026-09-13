@@ -95,7 +95,7 @@ export const loginRateLimiter = rateLimit({
  */
 export const otpRateLimiter = rateLimit({
   windowMs: 10 * 60 * 1000,
-  max: 5,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too many OTP requests. Please wait before requesting another OTP.' },

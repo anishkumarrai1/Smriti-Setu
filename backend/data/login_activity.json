@@ -1,5 +1,15 @@
 [
   {
+    "identifier": "ediwsfheoisg",
+    "status": "failed",
+    "authMethod": "mobile_password",
+    "failureReason": "Account does not exist",
+    "ipAddress": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+    "id": "log-1789286023596-bnhcs",
+    "timestamp": "2026-09-13T07:53:43.596Z"
+  },
+  {
     "userId": "usr-admin-001",
     "identifier": "admin@smritisetu.gov.in",
     "status": "success",

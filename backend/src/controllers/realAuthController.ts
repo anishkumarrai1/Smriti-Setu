@@ -98,8 +98,8 @@ export const register = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Full name, email, mobile number, and password are required.' });
     }
 
-    if (!emailVerified || !mobileVerified) {
-      return res.status(400).json({ error: 'Both email and mobile number must be OTP verified before account creation.' });
+    if (!emailVerified) {
+      return res.status(400).json({ error: 'Email must be OTP verified before account creation.' });
     }
 
     const { user, token } = await authService.createUser({
@@ -107,7 +107,7 @@ export const register = async (req: Request, res: Response) => {
       email,
       emailVerified: true,
       mobileNumber,
-      mobileVerified: true,
+      mobileVerified: false,
       passwordPlain: password,
       assignedRole,
     });

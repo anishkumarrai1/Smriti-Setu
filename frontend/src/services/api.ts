@@ -17,7 +17,7 @@ export const apiClient = axios.create({
     'Content-Type': 'application/json',
     'X-Platform-Region': 'North-Eastern-Region-India',
   },
-  timeout: 10000,
+  timeout: 25000,
   withCredentials: true, // Send HTTP-only session cookies automatically
 });
 

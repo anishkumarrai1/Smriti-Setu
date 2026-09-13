@@ -68,5 +68,51 @@
     "updatedAt": "2026-09-12T19:17:23.031Z",
     "lastLoginAt": "2026-09-12T19:17:23.031Z",
     "lastActivityAt": "2026-09-12T19:17:23.031Z"
+  },
+  {
+    "id": "usr-1789286851754-bmz5e",
+    "fullName": "Test User",
+    "email": "test_patient_user@smritisetu.gov.in",
+    "emailVerified": true,
+    "mobileNumber": "+91 98765 43210",
+    "mobileVerified": false,
+    "passwordHash": "$2b$10$6taS7Mc6atdapzOSKIdR7eZ5wv..YQun/Ite.El.2OEYlMgGc7hei",
+    "role": "user",
+    "assignedRole": "patient",
+    "accountStatus": "active",
+    "createdAt": "2026-09-13T08:07:31.754Z",
+    "updatedAt": "2026-09-13T08:07:31.754Z",
+    "lastLoginAt": "2026-09-13T08:07:31.754Z",
+    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+    "hierarchy": {
+      "region": "North Eastern Region",
+      "state": "Assam",
+      "district": "Kamrup Metropolitan",
+      "facilityId": "fac-ghy-01",
+      "facilityName": "Guwahati Regional Cognitive Care Center"
+    }
+  },
+  {
+    "id": "usr-1789287313788-6y809",
+    "fullName": "Utkarsh Sonkar",
+    "email": "notsousefulforme@gmail.com",
+    "emailVerified": true,
+    "mobileNumber": "9895479587",
+    "mobileVerified": false,
+    "passwordHash": "$2b$10$Q0qfHi6Voa6J82QF/FCqOOED1HXJwrNtAQDH6oCxubtsXUvs9UqRW",
+    "role": "user",
+    "assignedRole": "patient",
+    "accountStatus": "active",
+    "createdAt": "2026-09-13T08:15:13.788Z",
+    "updatedAt": "2026-09-13T08:15:13.788Z",
+    "lastLoginAt": "2026-09-13T08:15:13.788Z",
+    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+    "hierarchy": {
+      "region": "North Eastern Region",
+      "state": "Assam",
+      "district": "Kamrup Metropolitan",
+      "facilityId": "fac-ghy-01",
+      "facilityName": "Guwahati Regional Cognitive Care Center"
+    }
   }
 ]

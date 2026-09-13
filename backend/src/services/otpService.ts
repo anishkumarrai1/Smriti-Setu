@@ -17,13 +17,24 @@ class OTPService {
     const pass = process.env.SMTP_PASS;
 
     if (host && user && pass) {
-      this.mailTransporter = nodemailer.createTransport({
-        host,
-        port,
-        secure: port === 465,
-        auth: { user, pass },
-      });
-      console.log(`[EMAIL SERVICE] Nodemailer connected to SMTP server: ${host}:${port}`);
+      if (host.includes('gmail.com')) {
+        this.mailTransporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: { user, pass },
+          pool: true,
+          maxConnections: 5,
+        });
+      } else {
+        this.mailTransporter = nodemailer.createTransport({
+          host,
+          port,
+          secure: port === 465,
+          auth: { user, pass },
+          pool: true,
+          maxConnections: 5,
+        });
+      }
+      console.log(`[EMAIL SERVICE] Nodemailer configured for SMTP: ${host}`);
     }
   }
 
@@ -72,8 +83,10 @@ class OTPService {
 
     this.otpStore.set(cleanTarget, record);
 
-    // Deliver OTP via real provider or sandbox log
-    await this.deliverOTP(cleanTarget, channel, plainOTP);
+    // Deliver OTP in the background (non-blocking) so response is instantaneous
+    this.deliverOTP(cleanTarget, channel, plainOTP).catch((err) => {
+      console.error(`[OTP DELIVERY ASYNC ERROR]`, err?.message || err);
+    });
 
     return {
       success: true,
