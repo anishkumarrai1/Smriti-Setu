@@ -191,6 +191,10 @@ export const ClinicianDashboard: React.FC = () => {
 
   // Filtered session list for currently active patient
   const patientSessions = useMemo(() => {
+    const liveForPatient = sessionHistory.filter((s) => s.patientId === activePatient.id);
+    if (liveForPatient.length > 0) {
+      return liveForPatient;
+    }
     if (activePatient.id === 'pat-ner-001') {
       return sessionHistory;
     }

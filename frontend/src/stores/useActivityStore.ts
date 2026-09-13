@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { CognitiveActivity, GameSession, DifficultyLevel, ActivityType } from '../types';
 import { calculateNextDifficulty } from '../utils/adaptiveDifficulty';
 import { gameApi } from '../services/api';
+import { useAuthStore } from './useAuthStore';
 
 interface ActivityState {
   activities: CognitiveActivity[];
@@ -217,9 +218,10 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
   startSession: (type) => {
     const now = Date.now();
+    const activePatientId = useAuthStore.getState().selectedPatient?.id || 'pat-ner-001';
     const newSession: GameSession = {
       id: `sess-${now}`,
-      patientId: 'pat-ner-001',
+      patientId: activePatientId,
       activityType: type,
       timestamp: new Date().toISOString(),
       accuracyPercentage: 0,
@@ -234,6 +236,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
   completeSession: async (accuracy, attempts, responseTimeMs, explicitActivityType) => {
     const { activeSession, sessionHistory, currentDifficulty, sessionStartTime } = get();
+    const activePatientId = useAuthStore.getState().selectedPatient?.id || activeSession?.patientId || 'pat-ner-001';
 
     const elapsedMs = Math.max(1500, Date.now() - (sessionStartTime || Date.now()));
     const finalResponseTimeMs = responseTimeMs > 0 ? responseTimeMs : elapsedMs;
@@ -242,7 +245,7 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
 
     const completedSession: GameSession = {
       id: activeSession?.id || `sess-${Date.now()}`,
-      patientId: activeSession?.patientId || 'pat-ner-001',
+      patientId: activePatientId,
       activityType: targetActivity,
       timestamp: new Date().toISOString(),
       accuracyPercentage: Math.max(0, Math.min(100, Math.round(accuracy))),

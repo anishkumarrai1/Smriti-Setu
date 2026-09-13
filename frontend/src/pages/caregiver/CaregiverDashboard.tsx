@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Heart, 
   Calendar, 
@@ -27,7 +27,8 @@ import {
   Download,
   ShieldCheck,
   Eye,
-  Stethoscope
+  Stethoscope,
+  RefreshCw
 } from 'lucide-react';
 import { 
   ResponsiveContainer, 
@@ -56,7 +57,20 @@ export const CaregiverDashboard: React.FC = () => {
   const { memories, addMemory } = useMemoryStore();
   const { reminders, addReminder, updateReminderState } = useReminderStore();
   const { device } = useDeviceStore();
-  const { sessionHistory } = useActivityStore();
+  const { sessionHistory, fetchSessionHistory } = useActivityStore();
+
+  const [syncing, setSyncing] = useState(false);
+
+  // Fetch real game sessions from backend on load or when selected patient changes
+  useEffect(() => {
+    fetchSessionHistory(selectedPatient?.id);
+  }, [selectedPatient?.id, fetchSessionHistory]);
+
+  const handleSyncTelemetry = async () => {
+    setSyncing(true);
+    await fetchSessionHistory(selectedPatient?.id);
+    setTimeout(() => setSyncing(false), 600);
+  };
 
   // Clinical Report Modal State
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
@@ -65,18 +79,25 @@ export const CaregiverDashboard: React.FC = () => {
   const [selectedMetric, setSelectedMetric] = useState<'accuracy' | 'responseTime' | 'timeSpent' | 'all'>('all');
   const [selectedActivityFilter, setSelectedActivityFilter] = useState<string>('all');
 
+  // Filtered relevant sessions for currently active patient
+  const relevantSessions = useMemo(() => {
+    if (!selectedPatient?.id) return sessionHistory;
+    const patientSpecific = sessionHistory.filter(s => s.patientId === selectedPatient.id);
+    return patientSpecific.length > 0 ? patientSpecific : sessionHistory;
+  }, [sessionHistory, selectedPatient?.id]);
+
   // Filtered session history and chart data formatting
   const chartData = useMemo(() => {
     const filtered = selectedActivityFilter === 'all'
-      ? sessionHistory
-      : sessionHistory.filter(s => s.activityType === selectedActivityFilter);
+      ? relevantSessions
+      : relevantSessions.filter(s => s.activityType === selectedActivityFilter);
     
     const sorted = [...filtered].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
     return sorted.map((s, idx) => {
       const actTitle = {
         photo_puzzle: 'Photo Puzzle',
-        memory_match: 'Memory Match',
+        memory_match: 'Remember the Picture',
         picture_recognition: 'Who Is This?',
         familiar_sound: 'Familiar Sound',
         sequence_recall: 'Pattern Recall',
@@ -85,7 +106,7 @@ export const CaregiverDashboard: React.FC = () => {
 
       const dateObj = new Date(s.timestamp);
       const dateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      const timeSpentMin = Math.max(1, Math.round((s.avgResponseTimeMs * s.attemptsCount) / 60000 * 10) / 10);
+      const timeSpentMin = Math.max(0.5, Math.round((s.avgResponseTimeMs * Math.max(1, s.attemptsCount)) / 60000 * 10) / 10);
       const responseTimeSec = parseFloat((s.avgResponseTimeMs / 1000).toFixed(1));
 
       return {
@@ -98,25 +119,26 @@ export const CaregiverDashboard: React.FC = () => {
         attempts: s.attemptsCount,
       };
     });
-  }, [sessionHistory, selectedActivityFilter]);
+  }, [relevantSessions, selectedActivityFilter]);
 
-  // Overall Behavioral KPI Metrics Calculations
+  // Overall Behavioral KPI Metrics Calculations (Real Live Telemetry)
   const overallAccuracy = useMemo(() => {
-    if (sessionHistory.length === 0) return 88;
-    const sum = sessionHistory.reduce((acc, s) => acc + s.accuracyPercentage, 0);
-    return Math.round(sum / sessionHistory.length);
-  }, [sessionHistory]);
+    if (relevantSessions.length === 0) return 0;
+    const sum = relevantSessions.reduce((acc, s) => acc + s.accuracyPercentage, 0);
+    return Math.round(sum / relevantSessions.length);
+  }, [relevantSessions]);
 
   const totalTimeSpentMins = useMemo(() => {
-    const sumMs = sessionHistory.reduce((acc, s) => acc + s.avgResponseTimeMs * Math.max(1, s.attemptsCount), 0);
-    return Math.max(25, Math.round(sumMs / 60000));
-  }, [sessionHistory]);
+    if (relevantSessions.length === 0) return 0;
+    const sumMs = relevantSessions.reduce((acc, s) => acc + (s.avgResponseTimeMs || 2500) * Math.max(1, s.attemptsCount || 1), 0);
+    return Math.max(1, Math.round(sumMs / 60000));
+  }, [relevantSessions]);
 
   const avgSpeedSecs = useMemo(() => {
-    if (sessionHistory.length === 0) return 2.9;
-    const sumMs = sessionHistory.reduce((acc, s) => acc + s.avgResponseTimeMs, 0);
-    return (sumMs / sessionHistory.length / 1000).toFixed(1);
-  }, [sessionHistory]);
+    if (relevantSessions.length === 0) return '0.0';
+    const sumMs = relevantSessions.reduce((acc, s) => acc + (s.avgResponseTimeMs || 0), 0);
+    return (sumMs / relevantSessions.length / 1000).toFixed(1);
+  }, [relevantSessions]);
 
   // Modal States
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
@@ -133,7 +155,7 @@ export const CaregiverDashboard: React.FC = () => {
     ];
 
     return gameDefs.map((g) => {
-      const sessions = sessionHistory.filter((s) => s.activityType === g.id);
+      const sessions = relevantSessions.filter((s) => s.activityType === g.id);
       if (sessions.length === 0) {
         return {
           ...g,
@@ -177,7 +199,7 @@ export const CaregiverDashboard: React.FC = () => {
         hasData: true,
       };
     });
-  }, [sessionHistory]);
+  }, [relevantSessions]);
 
   // Form States - Memory
   const [memTitle, setMemTitle] = useState('');
@@ -345,7 +367,7 @@ export const CaregiverDashboard: React.FC = () => {
             </p>
           </div>
 
-          {/* Metric Selector Tabs */}
+          {/* Metric Selector Tabs & Live Sync */}
           <div className="flex flex-wrap items-center gap-2">
             {[
               { id: 'accuracy', label: 'Accuracy Zigzag (%)' },
@@ -365,6 +387,16 @@ export const CaregiverDashboard: React.FC = () => {
                 {tab.label}
               </button>
             ))}
+
+            <button
+              onClick={handleSyncTelemetry}
+              disabled={syncing}
+              className="px-3.5 py-1.5 rounded-full text-xs font-black bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+              title="Fetch real live gameplay sessions from server"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-emerald-700 ${syncing ? 'animate-spin' : ''}`} />
+              <span>{syncing ? 'Fetching...' : '🔄 Live Sync'}</span>
+            </button>
           </div>
         </div>
 
