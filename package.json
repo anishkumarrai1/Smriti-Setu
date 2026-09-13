@@ -3,17 +3,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "Smriti-Setu Monorepo: Frontend Web Portal & Backend API Service",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "install:all": "npm install --prefix backend && npm install --prefix frontend",
-    "postinstall": "npm run install:all",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && npm run dev",
-    "build:frontend": "cd frontend && npm run build",
-    "build:backend": "cd backend && npm run build",
-    "build": "npm run install:all && npm run build:frontend && npm run build:backend",
-    "start": "cd backend && npm start",
-    "test": "cd backend && npm test",
-    "test:backend": "cd backend && npm test",
-    "deploy": "cd frontend && npm run build && npx gh-pages -d dist"
+    "dev:frontend": "npm run dev --workspace=frontend",
+    "dev:backend": "npm run dev --workspace=backend",
+    "build:frontend": "npm run build --workspace=frontend",
+    "build:backend": "npm run build --workspace=backend",
+    "build": "npm run build:frontend && npm run build:backend",
+    "start": "npm run start --workspace=backend",
+    "test": "npm run test --workspace=backend",
+    "test:backend": "npm run test --workspace=backend"
   }
 }
