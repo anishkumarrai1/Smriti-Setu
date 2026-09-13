@@ -3,6 +3,7 @@ import {
   getAdminUsers,
   getAdminUserById,
   updateUserStatus,
+  adminResetUserPassword,
   getAdminLoginActivity,
   getAdminStats,
   exportUsersCSV,
@@ -24,6 +25,9 @@ router.get('/users/:id', getAdminUserById);
 
 // PATCH /api/admin/users/:id/status
 router.patch('/users/:id/status', updateUserStatus);
+
+// POST /api/admin/users/:id/reset-password
+router.post('/users/:id/reset-password', adminResetUserPassword);
 
 // GET /api/admin/login-activity
 router.get('/login-activity', getAdminLoginActivity);

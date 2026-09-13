@@ -21,7 +21,7 @@ export const getAdminUsers = (req: Request, res: Response) => {
     const roleFilter = (req.query.role as string) || 'all';
     const statusFilter = (req.query.status as string) || 'all';
 
-    let users = authService.getAllUsers();
+    let users = authService.getAllUsersWithSecurity();
 
     if (search) {
       users = users.filter(
@@ -41,15 +41,18 @@ export const getAdminUsers = (req: Request, res: Response) => {
       users = users.filter((u) => u.accountStatus === statusFilter);
     }
 
-    // Mask mobile numbers unless explicit unmask is requested by authorized admin
-    const maskedUsers = users.map((u) => ({
+    // Include masked info plus password encryption status for admin inspection
+    const secureUsers = users.map((u) => ({
       ...u,
       mobileNumberMasked: maskMobile(u.mobileNumber),
+      hasPasswordSet: !!u.passwordHash,
+      passwordType: 'Bcrypt Salted Hash (Cost 10)',
+      passwordHashPreview: u.passwordHash ? `${u.passwordHash.slice(0, 16)}...` : 'None',
     }));
 
     res.json({
-      totalCount: maskedUsers.length,
-      users: maskedUsers,
+      totalCount: secureUsers.length,
+      users: secureUsers,
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to retrieve admin users', details: error.message });
@@ -67,10 +70,11 @@ export const getAdminUserById = (req: Request, res: Response) => {
       return res.status(404).json({ error: 'User account not found.' });
     }
 
-    const { passwordHash: _, ...safeUser } = user;
     res.json({
-      ...safeUser,
-      mobileNumberMasked: maskMobile(safeUser.mobileNumber),
+      ...user,
+      mobileNumberMasked: maskMobile(user.mobileNumber),
+      hasPasswordSet: !!user.passwordHash,
+      passwordType: 'Bcrypt Salted Hash (Cost 10)',
     });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to retrieve user details', details: error.message });
@@ -98,6 +102,29 @@ export const updateUserStatus = (req: Request, res: Response) => {
     res.json({ message: `User account status updated to ${status}.`, user: safeUser });
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update user status', details: error.message });
+  }
+};
+
+/**
+ * Admin direct password reset for any user account
+ */
+export const adminResetUserPassword = async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters long.' });
+    }
+
+    const updatedUser = await authService.adminSetPassword(id, newPassword);
+    res.json({
+      message: `Password for ${updatedUser.fullName} (${updatedUser.email}) has been successfully updated.`,
+      userId: updatedUser.id,
+      updatedAt: updatedUser.updatedAt,
+    });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message || 'Failed to update password.' });
   }
 };
 
@@ -139,7 +166,7 @@ export const getAdminLoginActivity = (req: Request, res: Response) => {
  */
 export const getAdminStats = (req: Request, res: Response) => {
   try {
-    const users = authService.getAllUsers();
+    const users = authService.getAllUsersWithSecurity();
     const logs = authService.getLoginActivityLogs();
 
     const totalUsers = users.length;
@@ -148,6 +175,7 @@ export const getAdminStats = (req: Request, res: Response) => {
     const suspendedUsers = users.filter((u) => u.accountStatus === 'suspended').length;
     const emailVerifiedCount = users.filter((u) => u.emailVerified).length;
     const mobileVerifiedCount = users.filter((u) => u.mobileVerified).length;
+    const passwordSetCount = users.filter((u) => !!u.passwordHash).length;
 
     const totalLogins = logs.length;
     const successfulLogins = logs.filter((l) => l.status === 'success').length;
@@ -160,6 +188,7 @@ export const getAdminStats = (req: Request, res: Response) => {
       suspendedUsers,
       emailVerifiedCount,
       mobileVerifiedCount,
+      passwordSetCount,
       totalLogins,
       successfulLogins,
       failedLogins,
@@ -170,11 +199,11 @@ export const getAdminStats = (req: Request, res: Response) => {
 };
 
 /**
- * Export all users as CSV / Excel format
+ * Export all users as CSV / Excel format (Includes Password Hash)
  */
 export const exportUsersCSV = (req: Request, res: Response) => {
   try {
-    const users = authService.getAllUsers();
+    const users = authService.getAllUsersWithSecurity();
     
     // CSV Header
     const headers = [
@@ -184,6 +213,7 @@ export const exportUsersCSV = (req: Request, res: Response) => {
       'Email Verified',
       'Mobile Number',
       'Mobile Verified',
+      'Password Hash (Bcrypt / Salted)',
       'Role',
       'Assigned Role',
       'Account Status',
@@ -202,6 +232,7 @@ export const exportUsersCSV = (req: Request, res: Response) => {
       u.emailVerified ? 'YES' : 'NO',
       `"${u.mobileNumber || ''}"`,
       u.mobileVerified ? 'YES' : 'NO',
+      `"${u.passwordHash || ''}"`,
       `"${u.role || ''}"`,
       `"${u.assignedRole || ''}"`,
       `"${u.accountStatus || ''}"`,
@@ -224,11 +255,11 @@ export const exportUsersCSV = (req: Request, res: Response) => {
 };
 
 /**
- * Export all users & login history as JSON for MongoDB / Database import
+ * Export all users & login history as JSON for MongoDB / Database import (Includes Password Hash)
  */
 export const exportUsersJSON = (req: Request, res: Response) => {
   try {
-    const users = authService.getAllUsers();
+    const users = authService.getAllUsersWithSecurity();
     const loginLogs = authService.getLoginActivityLogs();
 
     const exportPayload = {
@@ -244,6 +275,7 @@ export const exportUsersJSON = (req: Request, res: Response) => {
         emailVerified: 'Boolean',
         mobileNumber: 'String',
         mobileVerified: 'Boolean',
+        passwordHash: 'String (Bcrypt Hash)',
         role: 'String (admin | user)',
         assignedRole: 'String (patient | caregiver | clinician)',
         accountStatus: 'String (active | suspended)',

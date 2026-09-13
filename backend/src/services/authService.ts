@@ -421,8 +421,25 @@ class AuthService {
     return Array.from(this.usersMap.values()).map(({ passwordHash, ...safe }) => safe);
   }
 
+  public getAllUsersWithSecurity(): UserRecord[] {
+    return Array.from(this.usersMap.values());
+  }
+
   public getLoginActivityLogs(): LoginActivityLog[] {
     return this.loginLogs;
+  }
+
+  public async adminSetPassword(userId: string, newPasswordPlain: string): Promise<UserRecord> {
+    const user = this.usersMap.get(userId);
+    if (!user) {
+      throw new Error('User account not found.');
+    }
+    const newHash = await bcrypt.hash(newPasswordPlain, 10);
+    user.passwordHash = newHash;
+    user.updatedAt = new Date().toISOString();
+    this.usersMap.set(userId, user);
+    this.saveToDisk();
+    return user;
   }
 
   public updateUserStatus(userId: string, status: 'active' | 'suspended'): UserRecord | undefined {

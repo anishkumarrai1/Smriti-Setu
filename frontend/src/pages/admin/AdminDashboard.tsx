@@ -25,7 +25,8 @@ import {
   Copy,
   Check,
   Server,
-  Layers
+  Layers,
+  X
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { adminApi } from '../../services/api';
@@ -40,6 +41,13 @@ export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loginLogs, setLoginLogs] = useState<any[]>([]);
+
+  // Password reset modal state
+  const [resetModalUser, setResetModalUser] = useState<any | null>(null);
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetFeedback, setResetFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [viewHashUserId, setViewHashUserId] = useState<string | null>(null);
 
   // Filter & Search states
   const [userSearch, setUserSearch] = useState('');
@@ -174,6 +182,36 @@ export const AdminDashboard: React.FC = () => {
     navigator.clipboard.writeText('mongoimport --db smriti_setu --collection users --file smriti_setu_users.json --jsonArray');
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
+  };
+
+  const handleOpenResetModal = (targetUser: any) => {
+    setResetModalUser(targetUser);
+    setNewPasswordInput('');
+    setResetFeedback(null);
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetModalUser || !newPasswordInput) return;
+    if (newPasswordInput.length < 6) {
+      setResetFeedback({ type: 'error', message: 'Password must be at least 6 characters long.' });
+      return;
+    }
+
+    setResetLoading(true);
+    setResetFeedback(null);
+    try {
+      const res = await adminApi.resetUserPassword(resetModalUser.id, newPasswordInput);
+      setResetFeedback({ type: 'success', message: res.message || 'Password updated successfully!' });
+      setTimeout(() => {
+        setResetModalUser(null);
+        loadData();
+      }, 1500);
+    } catch (err: any) {
+      setResetFeedback({ type: 'error', message: err?.response?.data?.error || 'Failed to update password' });
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   // Guard: Restrict access to non-admin users
@@ -440,6 +478,7 @@ export const AdminDashboard: React.FC = () => {
                   <th className="py-3 px-4">Contact Info</th>
                   <th className="py-3 px-4">Verifications</th>
                   <th className="py-3 px-4">Role & Persona</th>
+                  <th className="py-3 px-4">Password & Security</th>
                   <th className="py-3 px-4">Account Status</th>
                   <th className="py-3 px-4">Created Date</th>
                   <th className="py-3 px-4">Actions</th>
@@ -482,6 +521,34 @@ export const AdminDashboard: React.FC = () => {
                         {u.role} ({u.assignedRole})
                       </span>
                     </td>
+                    <td className="py-3.5 px-4 space-y-1">
+                      <div className="flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                        <span className="font-mono text-[10px] text-slate-700 font-bold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 truncate max-w-[130px]" title={u.passwordHash}>
+                          {viewHashUserId === u.id ? u.passwordHash : (u.passwordHashPreview || '••••••••••••••••')}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => setViewHashUserId(viewHashUserId === u.id ? null : u.id)}
+                          className="text-blue-700 hover:underline font-bold cursor-pointer"
+                        >
+                          {viewHashUserId === u.id ? 'Hide' : 'Inspect'}
+                        </button>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(u.passwordHash || '');
+                            alert('Password hash copied to clipboard!');
+                          }}
+                          className="text-slate-600 hover:underline cursor-pointer"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </td>
                     <td className="py-3.5 px-4">
                       <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold capitalize ${
                         u.accountStatus === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
@@ -493,18 +560,29 @@ export const AdminDashboard: React.FC = () => {
                       {new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </td>
                     <td className="py-3.5 px-4">
-                      {u.role !== 'admin' && (
+                      <div className="flex flex-col gap-1.5">
                         <button
-                          onClick={() => handleToggleStatus(u.id, u.accountStatus)}
-                          className={`px-3 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                            u.accountStatus === 'active'
-                              ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
-                              : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
-                          }`}
+                          onClick={() => handleOpenResetModal(u)}
+                          className="px-2.5 py-1 rounded-xl text-xs font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 transition-all cursor-pointer flex items-center justify-center gap-1"
+                          title="Reset and assign new password"
                         >
-                          {u.accountStatus === 'active' ? 'Suspend' : 'Activate'}
+                          <KeyRound className="w-3 h-3 text-amber-700" />
+                          <span>Reset Pass</span>
                         </button>
-                      )}
+
+                        {u.role !== 'admin' && (
+                          <button
+                            onClick={() => handleToggleStatus(u.id, u.accountStatus)}
+                            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
+                              u.accountStatus === 'active'
+                                ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
+                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                            }`}
+                          >
+                            {u.accountStatus === 'active' ? 'Suspend' : 'Activate'}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -716,6 +794,95 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
+        </div>
+      )}
+
+      {/* 7. ADMIN DIRECT PASSWORD RESET MODAL */}
+      {resetModalUser && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 animate-fadeIn">
+          <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-300 overflow-hidden">
+            
+            {/* Header */}
+            <div className="bg-[#031326] text-white p-5 flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-amber-500/20 rounded-xl text-amber-300 border border-amber-400/30">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 block">
+                    Admin Security Override
+                  </span>
+                  <h3 className="font-serif font-bold text-base text-white">
+                    Set User Password
+                  </h3>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setResetModalUser(null)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-full hover:bg-white/10 transition-all cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleResetPasswordSubmit} className="p-6 space-y-4 bg-[#FAFBFD]">
+              <div className="p-3.5 bg-slate-100 rounded-2xl space-y-1 text-xs">
+                <span className="text-slate-500 font-bold block text-[10px] uppercase">Target User Account:</span>
+                <p className="font-black text-slate-900 text-sm">{resetModalUser.fullName}</p>
+                <p className="font-mono text-slate-600">{resetModalUser.email} · {resetModalUser.mobileNumber}</p>
+              </div>
+
+              {resetFeedback && (
+                <div className={`p-3 rounded-2xl text-xs font-bold flex items-center gap-2 ${
+                  resetFeedback.type === 'success'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  {resetFeedback.type === 'success' ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <XCircle className="w-4 h-4 shrink-0" />}
+                  <span>{resetFeedback.message}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  New Password
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter new password (e.g. UserPass12!)"
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-xs font-bold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#004085]"
+                />
+                <span className="text-[11px] text-slate-500 mt-1 block">
+                  Password will be hashed with Bcrypt (Salt Cost 10) upon saving.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setResetModalUser(null)}
+                  className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-all cursor-pointer"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  disabled={resetLoading || !newPasswordInput}
+                  className="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-[#004085] hover:bg-[#002b5c] shadow-md flex items-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+                >
+                  <KeyRound className="w-4 h-4" />
+                  <span>{resetLoading ? 'Encrypting & Saving...' : 'Save & Update Password'}</span>
+                </button>
+              </div>
+            </form>
+
+          </div>
         </div>
       )}
 

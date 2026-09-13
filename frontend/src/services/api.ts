@@ -87,6 +87,9 @@ export const adminApi = {
   updateUserStatus: async (id: string, status: 'active' | 'suspended') => {
     return apiClient.patch(`/admin/users/${id}/status`, { status }).then((res) => res.data);
   },
+  resetUserPassword: async (id: string, newPassword: string) => {
+    return apiClient.post(`/admin/users/${id}/reset-password`, { newPassword }).then((res) => res.data);
+  },
   getLoginActivity: async (params?: { search?: string; status?: string }) => {
     const q = new URLSearchParams(params as any).toString();
     return apiClient.get(`/admin/login-activity?${q}`).then((res) => res.data);
