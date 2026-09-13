@@ -5,6 +5,8 @@ import {
   updateUserStatus,
   getAdminLoginActivity,
   getAdminStats,
+  exportUsersCSV,
+  exportUsersJSON,
 } from '../controllers/adminController';
 import { authenticateJWT, requireRole } from '../middleware/authMiddleware';
 
@@ -28,5 +30,11 @@ router.get('/login-activity', getAdminLoginActivity);
 
 // GET /api/admin/stats
 router.get('/stats', getAdminStats);
+
+// GET /api/admin/export/csv (Excel Spreadsheet Export)
+router.get('/export/csv', exportUsersCSV);
+
+// GET /api/admin/export/json (MongoDB / Database JSON Export)
+router.get('/export/json', exportUsersJSON);
 
 export default router;

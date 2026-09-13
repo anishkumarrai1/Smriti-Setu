@@ -168,3 +168,99 @@ export const getAdminStats = (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to retrieve admin stats', details: error.message });
   }
 };
+
+/**
+ * Export all users as CSV / Excel format
+ */
+export const exportUsersCSV = (req: Request, res: Response) => {
+  try {
+    const users = authService.getAllUsers();
+    
+    // CSV Header
+    const headers = [
+      'User ID',
+      'Full Name',
+      'Email',
+      'Email Verified',
+      'Mobile Number',
+      'Mobile Verified',
+      'Role',
+      'Assigned Role',
+      'Account Status',
+      'Registered At',
+      'Last Login At',
+      'Region',
+      'State',
+      'District',
+      'Facility Name'
+    ];
+
+    const rows = users.map((u) => [
+      `"${u.id || ''}"`,
+      `"${(u.fullName || '').replace(/"/g, '""')}"`,
+      `"${u.email || ''}"`,
+      u.emailVerified ? 'YES' : 'NO',
+      `"${u.mobileNumber || ''}"`,
+      u.mobileVerified ? 'YES' : 'NO',
+      `"${u.role || ''}"`,
+      `"${u.assignedRole || ''}"`,
+      `"${u.accountStatus || ''}"`,
+      `"${u.createdAt || ''}"`,
+      `"${u.lastLoginAt || ''}"`,
+      `"${u.hierarchy?.region || ''}"`,
+      `"${u.hierarchy?.state || ''}"`,
+      `"${u.hierarchy?.district || ''}"`,
+      `"${(u.hierarchy?.facilityName || '').replace(/"/g, '""')}"`
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="smriti_setu_users_${Date.now()}.csv"`);
+    res.status(200).send(csvContent);
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to export CSV', details: error.message });
+  }
+};
+
+/**
+ * Export all users & login history as JSON for MongoDB / Database import
+ */
+export const exportUsersJSON = (req: Request, res: Response) => {
+  try {
+    const users = authService.getAllUsers();
+    const loginLogs = authService.getLoginActivityLogs();
+
+    const exportPayload = {
+      platform: 'Smriti-Setu Cognitive Care Platform',
+      version: '1.0.0',
+      exportedAt: new Date().toISOString(),
+      collection: 'users',
+      totalRecords: users.length,
+      schema: {
+        id: 'String (Primary Key)',
+        fullName: 'String',
+        email: 'String (Unique)',
+        emailVerified: 'Boolean',
+        mobileNumber: 'String',
+        mobileVerified: 'Boolean',
+        role: 'String (admin | user)',
+        assignedRole: 'String (patient | caregiver | clinician)',
+        accountStatus: 'String (active | suspended)',
+        createdAt: 'ISO8601 Date',
+        updatedAt: 'ISO8601 Date',
+        lastLoginAt: 'ISO8601 Date',
+        hierarchy: 'Object { region, state, district, facilityId, facilityName }'
+      },
+      mongoImportGuide: 'To import into MongoDB: mongoimport --db smriti_setu --collection users --file users.json --jsonArray',
+      users,
+      loginHistory: loginLogs
+    };
+
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="smriti_setu_mongodb_export_${Date.now()}.json"`);
+    res.status(200).send(JSON.stringify(exportPayload, null, 2));
+  } catch (error: any) {
+    res.status(500).json({ error: 'Failed to export JSON', details: error.message });
+  }
+};

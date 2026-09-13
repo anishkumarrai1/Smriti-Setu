@@ -94,6 +94,12 @@ export const adminApi = {
   getStats: async () => {
     return apiClient.get('/admin/stats').then((res) => res.data);
   },
+  exportUsersCSV: async () => {
+    return apiClient.get('/admin/export/csv', { responseType: 'blob' }).then((res) => res.data);
+  },
+  exportUsersJSON: async () => {
+    return apiClient.get('/admin/export/json', { responseType: 'blob' }).then((res) => res.data);
+  },
 };
 
 export const patientApi = {

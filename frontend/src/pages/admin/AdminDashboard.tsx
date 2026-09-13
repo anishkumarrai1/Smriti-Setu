@@ -18,7 +18,14 @@ import {
   UserCheck,
   Building2,
   Clock,
-  ShieldAlert
+  ShieldAlert,
+  FileSpreadsheet,
+  Database,
+  Download,
+  Copy,
+  Check,
+  Server,
+  Layers
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { adminApi } from '../../services/api';
@@ -26,8 +33,10 @@ import { adminApi } from '../../services/api';
 export const AdminDashboard: React.FC = () => {
   const { systemRole, user } = useAuthStore();
 
-  const [activeTab, setActiveTab] = useState<'users' | 'activity' | 'overview'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'activity' | 'database'>('overview');
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loginLogs, setLoginLogs] = useState<any[]>([]);
@@ -75,6 +84,98 @@ export const AdminDashboard: React.FC = () => {
     }
   };
 
+  // Download Excel/CSV format
+  const handleExportCSV = async () => {
+    setExporting('csv');
+    try {
+      const blob = await adminApi.exportUsersCSV();
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'text/csv' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smriti_setu_users_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      // Fallback: Client-side CSV generation
+      const headers = ['User ID', 'Full Name', 'Email', 'Email Verified', 'Mobile Number', 'Mobile Verified', 'Role', 'Assigned Role', 'Account Status', 'Created At', 'Last Login At', 'Region', 'State', 'Facility Name'];
+      const rows = usersList.map(u => [
+        `"${u.id || ''}"`,
+        `"${(u.fullName || '').replace(/"/g, '""')}"`,
+        `"${u.email || ''}"`,
+        u.emailVerified ? 'YES' : 'NO',
+        `"${u.mobileNumber || ''}"`,
+        u.mobileVerified ? 'YES' : 'NO',
+        `"${u.role || ''}"`,
+        `"${u.assignedRole || ''}"`,
+        `"${u.accountStatus || ''}"`,
+        `"${u.createdAt || ''}"`,
+        `"${u.lastLoginAt || ''}"`,
+        `"${u.hierarchy?.region || ''}"`,
+        `"${u.hierarchy?.state || ''}"`,
+        `"${(u.hierarchy?.facilityName || '').replace(/"/g, '""')}"`
+      ]);
+      const csvData = [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smriti_setu_users_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  // Download MongoDB JSON format
+  const handleExportJSON = async () => {
+    setExporting('json');
+    try {
+      const blob = await adminApi.exportUsersJSON();
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/json' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smriti_setu_mongodb_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      // Fallback: Client-side JSON generation
+      const payload = {
+        platform: 'Smriti-Setu Cognitive Care Platform',
+        version: '1.0.0',
+        exportedAt: new Date().toISOString(),
+        collection: 'users',
+        totalRecords: usersList.length,
+        mongoImportCommand: 'mongoimport --db smriti_setu --collection users --file users.json --jsonArray',
+        users: usersList,
+        loginHistory: loginLogs
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `smriti_setu_mongodb_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const handleCopyMongoCommand = () => {
+    navigator.clipboard.writeText('mongoimport --db smriti_setu --collection users --file smriti_setu_users.json --jsonArray');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
   // Guard: Restrict access to non-admin users
   if (systemRole !== 'admin') {
     return (
@@ -115,22 +216,43 @@ export const AdminDashboard: React.FC = () => {
                 <span className="text-xs text-emerald-400 font-mono hidden sm:inline">Node: NER-ADMIN-01</span>
               </div>
               <h1 className="text-2xl md:text-3xl font-serif font-black text-white mt-1">
-                Admin Authentication & Login Audit Console
+                Admin User Analytics & Audit Hub
               </h1>
               <p className="text-xs sm:text-sm text-slate-300">
-                Real-time user directory management, OTP verification logs, and login telemetry monitoring.
+                Track registered users, login history, and export complete database records into Excel (CSV) or MongoDB JSON.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Quick Action Export Buttons */}
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting === 'csv'}
+              className="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+              title="Export all users to Microsoft Excel / CSV spreadsheet"
+            >
+              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
+              <span>{exporting === 'csv' ? 'Exporting...' : 'Export Excel (CSV)'}</span>
+            </button>
+
+            <button
+              onClick={handleExportJSON}
+              disabled={exporting === 'json'}
+              className="px-3.5 py-2.5 rounded-xl bg-[#00558F] hover:bg-[#004070] text-white font-bold text-xs shadow-md flex items-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-50"
+              title="Export formatted JSON for MongoDB import"
+            >
+              <Database className="w-4 h-4 text-amber-300" />
+              <span>{exporting === 'json' ? 'Exporting...' : 'Export MongoDB (JSON)'}</span>
+            </button>
+
             <button
               onClick={loadData}
               disabled={loading}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-xs border border-slate-600 flex items-center gap-2 transition-all cursor-pointer"
+              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs shadow-xs border border-slate-600 transition-all cursor-pointer"
+              title="Refresh Telemetry"
             >
               <RefreshCw className={`w-4 h-4 text-amber-400 ${loading ? 'animate-spin' : ''}`} />
-              <span>Sync Telemetry</span>
             </button>
           </div>
         </div>
@@ -139,8 +261,9 @@ export const AdminDashboard: React.FC = () => {
         <div className="pt-4 flex flex-wrap items-center gap-2 border-t border-slate-800">
           {[
             { id: 'overview', label: 'Security Dashboard', icon: Activity },
-            { id: 'users', label: 'User Directory', icon: Users },
+            { id: 'users', label: `User Directory (${usersList.length || stats?.totalUsers || 0})`, icon: Users },
             { id: 'activity', label: 'Login Activity Logs', icon: KeyRound },
+            { id: 'database', label: 'MongoDB & Excel Export Hub', icon: Database },
           ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -450,6 +573,149 @@ export const AdminDashboard: React.FC = () => {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* 6. TAB 4: MONGODB & EXCEL EXPORT HUB */}
+      {activeTab === 'database' && (
+        <div className="space-y-6">
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
+                  <Database className="w-5 h-5 text-[#00558F]" />
+                  <span>Database Export & Cloud Sync Hub</span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Export all platform user profiles, contact records, login histories, and authentication metadata into Microsoft Excel or MongoDB NoSQL database.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-bold border border-slate-300">
+                  Total Records: {usersList.length} Users · {loginLogs.length} Logins
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            {/* Card 1: Microsoft Excel / CSV Export */}
+            <div className="bg-white p-6 md:p-8 rounded-3xl border border-emerald-200 shadow-sm space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-emerald-100 text-emerald-800 rounded-2xl">
+                    <FileSpreadsheet className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-lg text-slate-900">Microsoft Excel / CSV Export</h4>
+                    <span className="text-[11px] text-emerald-700 font-bold uppercase tracking-wider">Spreadsheet & Reporting Format</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Generates an industry-standard <strong>.CSV spreadsheet</strong> containing structured columns for all user accounts, email verifications, mobile numbers, roles, account statuses, registration dates, and last login timestamps.
+                </p>
+
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-1 text-xs">
+                  <span className="font-black text-slate-700 block text-[11px] uppercase">Included Table Columns:</span>
+                  <p className="font-mono text-[11px] text-slate-600">
+                    User ID, Full Name, Email, Email Verified, Mobile Number, Mobile Verified, Role, Assigned Persona, Account Status, Registered Date, Last Login Date, Region, State, Facility
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleExportCSV}
+                disabled={exporting === 'csv'}
+                className="w-full py-3 px-5 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                <span>{exporting === 'csv' ? 'Generating Spreadsheet...' : '📥 Download Excel Spreadsheet (.CSV)'}</span>
+              </button>
+            </div>
+
+            {/* Card 2: MongoDB / NoSQL JSON Export */}
+            <div className="bg-white p-6 md:p-8 rounded-3xl border border-blue-200 shadow-sm space-y-5 flex flex-col justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 bg-blue-100 text-[#00558F] rounded-2xl">
+                    <Database className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-lg text-slate-900">MongoDB / JSON Collection Export</h4>
+                    <span className="text-[11px] text-[#00558F] font-bold uppercase tracking-wider">NoSQL & Cloud Database Format</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  Generates a full <strong>JSON document array</strong> structured for direct import into <strong>MongoDB Atlas</strong>, <strong>PostgreSQL JSONB</strong>, or any cloud database collection, including full login history.
+                </p>
+
+                <div className="bg-slate-900 text-slate-200 p-3.5 rounded-2xl font-mono text-[11px] space-y-2 border border-slate-800">
+                  <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                    <span>MongoDB CLI Import Command</span>
+                    <button
+                      onClick={handleCopyMongoCommand}
+                      className="text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
+                    >
+                      {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>{copied ? 'Copied!' : 'Copy'}</span>
+                    </button>
+                  </div>
+                  <code className="text-emerald-400 block break-all">
+                    mongoimport --db smriti_setu --collection users --file users.json --jsonArray
+                  </code>
+                </div>
+              </div>
+
+              <button
+                onClick={handleExportJSON}
+                disabled={exporting === 'json'}
+                className="w-full py-3 px-5 rounded-2xl bg-[#00558F] hover:bg-[#004070] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-[1.02] active:scale-95 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4" />
+                <span>{exporting === 'json' ? 'Generating JSON...' : '🍃 Download MongoDB Collection (.JSON)'}</span>
+              </button>
+            </div>
+
+          </div>
+
+          {/* Database Live Schema Preview */}
+          <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <h4 className="font-serif font-bold text-base text-slate-900 flex items-center gap-2">
+                <Server className="w-4 h-4 text-slate-700" />
+                <span>Live Database Schema & Document Sample</span>
+              </h4>
+              <span className="text-xs text-slate-500 font-mono">Collection: <strong className="text-slate-900">smriti_setu.users</strong></span>
+            </div>
+
+            <div className="bg-slate-950 text-slate-300 p-4 rounded-2xl font-mono text-xs overflow-x-auto border border-slate-800">
+              <pre>{JSON.stringify({
+                _id: "usr-admin-001",
+                fullName: "NHA Regional Administrator",
+                email: "admin@smritisetu.gov.in",
+                emailVerified: true,
+                mobileNumber: "+919999900000",
+                mobileVerified: true,
+                role: "admin",
+                assignedRole: "clinician",
+                accountStatus: "active",
+                createdAt: "2026-09-13T08:00:00.000Z",
+                lastLoginAt: "2026-09-13T17:45:00.000Z",
+                hierarchy: {
+                  region: "North Eastern Region",
+                  state: "Assam",
+                  district: "Kamrup Metropolitan",
+                  facilityId: "fac-ghy-01",
+                  facilityName: "Guwahati Regional Cognitive Care Center"
+                }
+              }, null, 2)}</pre>
+            </div>
+          </div>
+
         </div>
       )}
 
