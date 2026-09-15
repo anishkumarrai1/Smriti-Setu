@@ -159,24 +159,41 @@ export const PatientProfileModal: React.FC<PatientProfileModalProps> = ({ isOpen
           {/* Photo Upload Section */}
           <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-center gap-5">
             <div className="relative group shrink-0">
-              <img
-                src={avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                alt={name}
-                className="w-24 h-24 rounded-2xl object-cover border-2 border-[#003366] shadow-md"
-              />
+              {avatarUrl && avatarUrl.trim() !== '' ? (
+                <img
+                  src={avatarUrl}
+                  alt={name}
+                  className="w-24 h-24 rounded-2xl object-cover border-2 border-[#003366] shadow-md"
+                />
+              ) : (
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#003366] to-[#00558F] text-white flex flex-col items-center justify-center font-black text-2xl border-2 border-[#003366] shadow-md select-none">
+                  <span>{name ? name.trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'P'}</span>
+                </div>
+              )}
               <label
                 htmlFor="patient-photo-input"
                 className="absolute inset-0 bg-slate-950/60 text-white rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
               >
                 <Camera className="w-6 h-6 mb-1 text-amber-300" />
-                <span className="text-[10px] font-bold">Change</span>
+                <span className="text-[10px] font-bold">{avatarUrl ? 'Change' : 'Upload'}</span>
               </label>
             </div>
 
             <div className="space-y-2 text-center sm:text-left flex-1">
-              <h4 className="font-serif font-bold text-sm text-slate-900">Patient Profile Photo</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="font-serif font-bold text-sm text-slate-900">Patient Profile Photo</h4>
+                {avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setAvatarUrl('')}
+                    className="text-[10px] text-rose-600 font-bold hover:underline cursor-pointer"
+                  >
+                    Remove Photo
+                  </button>
+                )}
+              </div>
               <p className="text-[11px] text-slate-500 leading-relaxed">
-                Upload a clear portrait photograph. This photo is used across your personalized Memory Garden, Family Puzzle, and Caregiver roster.
+                Upload a clear portrait photograph. If empty, the system displays clean patient initials.
               </p>
               
               <div>

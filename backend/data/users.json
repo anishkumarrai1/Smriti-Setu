@@ -12,7 +12,7 @@
     "accountStatus": "active",
     "createdAt": "2026-09-12T16:56:30.802Z",
     "updatedAt": "2026-09-15T15:58:19.716Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Assam",
@@ -36,6 +36,14 @@
     "accountStatus": "active",
     "createdAt": "2026-09-12T16:56:30.907Z",
     "updatedAt": "2026-09-15T15:59:36.132Z",
+    "avatarUrl": "",
+    "hierarchy": {
+      "region": "North Eastern Region",
+      "state": "Assam",
+      "district": "Kamrup Metropolitan",
+      "facilityId": "fac-ghy-01",
+      "facilityName": "Guwahati Regional Cognitive Care Center"
+    },
     "lastLoginAt": "2026-09-15T15:59:36.132Z",
     "lastActivityAt": "2026-09-15T15:59:36.132Z"
   },
@@ -51,7 +59,8 @@
     "assignedRole": "caregiver",
     "accountStatus": "active",
     "createdAt": "2026-09-12T16:56:31.002Z",
-    "updatedAt": "2026-09-12T16:56:31.002Z"
+    "updatedAt": "2026-09-12T16:56:31.002Z",
+    "avatarUrl": ""
   },
   {
     "id": "doc-ner-003",
@@ -66,6 +75,7 @@
     "accountStatus": "active",
     "createdAt": "2026-09-12T16:56:31.095Z",
     "updatedAt": "2026-09-15T15:57:48.022Z",
+    "avatarUrl": "",
     "lastLoginAt": "2026-09-15T15:57:48.022Z",
     "lastActivityAt": "2026-09-15T15:57:48.022Z"
   },
@@ -83,7 +93,7 @@
     "createdAt": "2026-09-13T08:07:31.754Z",
     "updatedAt": "2026-09-13T08:07:31.754Z",
     "lastLoginAt": "2026-09-13T08:07:31.754Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Assam",
@@ -106,7 +116,7 @@
     "createdAt": "2026-09-13T08:15:13.788Z",
     "updatedAt": "2026-09-13T08:15:13.788Z",
     "lastLoginAt": "2026-09-13T08:15:13.788Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Assam",
@@ -128,7 +138,7 @@
     "accountStatus": "active",
     "createdAt": "2026-09-15T15:06:15.468Z",
     "updatedAt": "2026-09-15T15:06:15.468Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Assam",
@@ -150,7 +160,7 @@
     "accountStatus": "active",
     "createdAt": "2026-09-15T15:06:15.605Z",
     "updatedAt": "2026-09-15T15:06:15.605Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Nagaland",
@@ -172,7 +182,7 @@
     "accountStatus": "active",
     "createdAt": "2026-09-15T15:06:15.728Z",
     "updatedAt": "2026-09-15T15:06:15.728Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Arunachal Pradesh",
@@ -195,7 +205,7 @@
     "createdAt": "2026-09-15T15:09:06.042Z",
     "updatedAt": "2026-09-15T15:09:06.042Z",
     "lastLoginAt": "2026-09-15T15:09:06.042Z",
-    "avatarUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80",
+    "avatarUrl": "",
     "hierarchy": {
       "region": "North Eastern Region",
       "state": "Assam",

@@ -33,7 +33,7 @@ export const getAllPatients = (req: Request, res: Response) => {
           attendingClinicianName: 'Dr. Devashish Phukan',
           cognitiveProfileNote: 'Newly registered patient. Cognitive baseline evaluation in progress.',
           elderlyModeEnabled: true,
-          avatarUrl: u.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+          avatarUrl: u.avatarUrl || '',
         };
         dataStore.addPatient(newPatientProfile);
         storePatients.push(newPatientProfile);
@@ -87,7 +87,7 @@ export const createPatient = (req: Request, res: Response) => {
       attendingClinicianName: 'Dr. Devashish Phukan',
       cognitiveProfileNote: cognitiveProfileNote || 'Newly registered patient profile.',
       elderlyModeEnabled: true,
-      avatarUrl: avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+      avatarUrl: avatarUrl || '',
     };
 
     const saved = dataStore.addPatient(newPatient);

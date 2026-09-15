@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { PatientProfile, RegionalState } from '../../types';
+import { PatientAvatar } from './PatientAvatar';
 
 interface PatientSwitcherModalProps {
   isOpen: boolean;
@@ -97,9 +98,7 @@ export const PatientSwitcherModal: React.FC<PatientSwitcherModalProps> = ({
         attendingClinicianName: 'Dr. Devashish Phukan',
         cognitiveProfileNote: formData.cognitiveProfileNote,
         elderlyModeEnabled: true,
-        avatarUrl: formData.gender === 'female'
-          ? 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80'
-          : 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+        avatarUrl: '',
       });
 
       setSuccessMessage(`Patient ${newPatient.name} registered successfully!`);
@@ -197,10 +196,10 @@ export const PatientSwitcherModal: React.FC<PatientSwitcherModalProps> = ({
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <img
-                            src={p.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                            alt={p.name}
-                            className="w-11 h-11 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
+                          <PatientAvatar
+                            name={p.name}
+                            avatarUrl={p.avatarUrl}
+                            size="md"
                           />
                           <div>
                             <div className="flex items-center gap-1.5">

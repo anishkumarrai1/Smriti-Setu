@@ -114,7 +114,7 @@ class AuthService {
         accountStatus: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+        avatarUrl: '',
         hierarchy: {
           region: 'North Eastern Region',
           state: 'Assam',
@@ -143,7 +143,7 @@ class AuthService {
         accountStatus: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+        avatarUrl: '',
         hierarchy: {
           region: 'North Eastern Region',
           state: 'Assam',
@@ -172,7 +172,7 @@ class AuthService {
         accountStatus: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+        avatarUrl: '',
         hierarchy: {
           region: 'North Eastern Region',
           state: 'Nagaland',
@@ -201,7 +201,7 @@ class AuthService {
         accountStatus: 'active',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&q=80',
+        avatarUrl: '',
         hierarchy: {
           region: 'North Eastern Region',
           state: 'Arunachal Pradesh',
@@ -342,7 +342,7 @@ class AuthService {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
-      avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+      avatarUrl: '',
       hierarchy: {
         region: 'North Eastern Region',
         state: 'Assam',

@@ -95,18 +95,24 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
             
             {/* Patient Portrait Photo Frame */}
             <div className="relative group shrink-0">
-              <img
-                src={selectedPatient?.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                alt={patientName}
-                className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl sm:rounded-3xl object-cover border-3 border-white/80 shadow-xl bg-slate-900"
-              />
+              {selectedPatient?.avatarUrl && selectedPatient.avatarUrl.trim() !== '' ? (
+                <img
+                  src={selectedPatient.avatarUrl}
+                  alt={patientName}
+                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl sm:rounded-3xl object-cover border-3 border-white/80 shadow-xl bg-slate-900"
+                />
+              ) : (
+                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#003366] to-[#00558F] text-white flex flex-col items-center justify-center font-black text-2xl sm:text-3xl border-3 border-white/80 shadow-xl select-none">
+                  <span>{patientName ? patientName.trim().split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : 'P'}</span>
+                </div>
+              )}
               <button
                 onClick={() => setIsProfileModalOpen(true)}
                 className="absolute inset-0 bg-slate-950/70 text-white rounded-2xl sm:rounded-3xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer backdrop-blur-2xs"
                 title="Click to change your photo"
               >
                 <Camera className="w-5 h-5 text-amber-300 mb-0.5" />
-                <span className="text-[10px] font-bold">Change</span>
+                <span className="text-[10px] font-bold">{selectedPatient?.avatarUrl ? 'Change' : 'Upload'}</span>
               </button>
             </div>
 

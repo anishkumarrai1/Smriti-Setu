@@ -45,6 +45,7 @@ import { formatDate, formatTime } from '../../utils/formatters';
 import { PatientBehaviourReportModal } from '../../components/reports/PatientBehaviourReportModal';
 import { ClinicalFormulaModal, FormulaKey } from '../../components/reports/ClinicalFormulaModal';
 import { PatientSwitcherModal } from '../../components/common/PatientSwitcherModal';
+import { PatientAvatar } from '../../components/common/PatientAvatar';
 import { Calculator, UserPlus } from 'lucide-react';
 
 const ACTIVITY_META: Record<string, { label: string; domain: string; color: string; bg: string }> = {
@@ -76,7 +77,7 @@ const ASSIGNED_PATIENTS: (PatientProfile & { baselineScore: number; status: 'sta
     attendingClinicianName: 'Dr. Devashish Phukan',
     cognitiveProfileNote: 'Early-stage memory assistance required. High engagement with family photo recall and Assamese traditional music.',
     elderlyModeEnabled: true,
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80',
+    avatarUrl: '',
     baselineScore: 88,
     status: 'stable',
     recentDiff: 'Easy → Medium',
@@ -99,7 +100,7 @@ const ASSIGNED_PATIENTS: (PatientProfile & { baselineScore: number; status: 'sta
     attendingClinicianName: 'Dr. Devashish Phukan',
     cognitiveProfileNote: 'Moderate memory loss. Benefits from simplified daily routines and slower-paced audio recognition prompts.',
     elderlyModeEnabled: true,
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&q=80',
+    avatarUrl: '',
     baselineScore: 64,
     status: 'review',
     recentDiff: 'Simplified to Easy',
@@ -122,7 +123,7 @@ const ASSIGNED_PATIENTS: (PatientProfile & { baselineScore: number; status: 'sta
     attendingClinicianName: 'Dr. Devashish Phukan',
     cognitiveProfileNote: 'High engagement in pattern recall and folk music. Retains strong attentional focus and working memory.',
     elderlyModeEnabled: false,
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80',
+    avatarUrl: '',
     baselineScore: 91,
     status: 'stable',
     recentDiff: 'Promoted to Challenging',
@@ -145,7 +146,7 @@ const ASSIGNED_PATIENTS: (PatientProfile & { baselineScore: number; status: 'sta
     attendingClinicianName: 'Dr. Devashish Phukan',
     cognitiveProfileNote: 'Mild cognitive impairment. Highly responsive to peaceful morning routine sequencing and family jigsaw puzzles.',
     elderlyModeEnabled: true,
-    avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&q=80',
+    avatarUrl: '',
     baselineScore: 79,
     status: 'moderate',
     recentDiff: 'Maintained Medium',
@@ -409,10 +410,10 @@ export const ClinicianDashboard: React.FC = () => {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <img
-                    src={p.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                    alt={p.name}
-                    className="w-10 h-10 rounded-full object-cover border border-white shadow-xs"
+                  <PatientAvatar
+                    name={p.name}
+                    avatarUrl={p.avatarUrl}
+                    size="md"
                   />
                   <div>
                     <h4 className="font-bold text-charcoal-900 text-sm leading-tight">{p.name}</h4>

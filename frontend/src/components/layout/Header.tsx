@@ -8,6 +8,7 @@ import { useAccessibilityStore } from '../../stores/useAccessibilityStore';
 import { AshokaEmblem, IndianFlagBadge } from '../common/GovEmblem';
 import { PatientSwitcherModal } from '../common/PatientSwitcherModal';
 import { PatientProfileModal } from '../common/PatientProfileModal';
+import { PatientAvatar } from '../common/PatientAvatar';
 
 interface HeaderProps {
   activeTab: string;
@@ -130,10 +131,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
                 className="flex items-center gap-1.5 p-1 bg-white hover:bg-slate-50 rounded-lg border border-slate-300 shadow-2xs cursor-pointer"
                 title="View/Edit Profile"
               >
-                <img
-                  src={selectedPatient.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                  alt={selectedPatient.name}
-                  className="w-7 h-7 rounded-full object-cover border border-[#003366]"
+                <PatientAvatar
+                  name={selectedPatient.name}
+                  avatarUrl={selectedPatient.avatarUrl}
+                  size="sm"
                 />
               </button>
             ) : (
@@ -186,10 +187,10 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
                 className="flex items-center gap-2.5 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-300 shadow-2xs transition-all cursor-pointer group hover:border-[#003366]"
                 title="Click to view/edit your personal profile & photo"
               >
-                <img
-                  src={selectedPatient.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
-                  alt={selectedPatient.name}
-                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-[#003366] shadow-xs shrink-0"
+                <PatientAvatar
+                  name={selectedPatient.name}
+                  avatarUrl={selectedPatient.avatarUrl}
+                  size="sm"
                 />
                 <div className="text-left">
                   <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider leading-none">Senior Patient</div>
