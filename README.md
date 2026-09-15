@@ -98,6 +98,14 @@ Smriti-Setu/
 
 ---
 
+## 🌐 Live Deployment & Online Links
+
+* **Live Web Application (Render):** [https://smriti-setu-4yjl.onrender.com](https://smriti-setu-4yjl.onrender.com)
+* **Backend API Health Check:** [https://smriti-setu-4yjl.onrender.com/api/health](https://smriti-setu-4yjl.onrender.com/api/health)
+* **API System Status:** [https://smriti-setu-4yjl.onrender.com/api/system/status](https://smriti-setu-4yjl.onrender.com/api/system/status)
+
+---
+
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
