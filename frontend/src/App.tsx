@@ -15,6 +15,7 @@ import { RemindersManagerView } from './components/reminders/RemindersManagerVie
 import { AiVoiceCompanion } from './components/common/AiVoiceCompanion';
 import { ArrowLeft, LogOut, ShieldCheck, Globe, User } from 'lucide-react';
 import { useHardwareSocketStore } from './stores/useHardwareSocketStore';
+import { useActivityStore } from './stores/useActivityStore';
 import hardwareInputAdapter from './services/hardwareInputAdapter';
 import { HardwareTestPanel } from './components/common/HardwareTestPanel';
 import { ForceTranslationListener } from './components/common/ForceTranslationListener';
@@ -22,21 +23,25 @@ import { useTranslation } from 'react-i18next';
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
-  const { role, setRole, fetchMe, logout, systemRole } = useAuthStore();
+  const { role, setRole, fetchMe, fetchPatients, logout, systemRole, selectedPatient } = useAuthStore();
+  const { fetchSessionHistory } = useActivityStore();
   
-  // Dedicated Login Gateway as primary entry mode
-  const [viewMode, setViewMode] = useState<'login' | 'public_portal' | 'authenticated_app'>('login');
+  // 1. PRIMARY ENTRY: Public Information Portal is opened first
+  const [viewMode, setViewMode] = useState<'login' | 'public_portal' | 'authenticated_app'>('public_portal');
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(null);
   const [activeTab, setActiveTab] = useState<string>('home');
 
   useEffect(() => {
-    // Check existing authentication session on launch
+    // Check existing authentication session and load patient roster on launch
     fetchMe();
+    fetchPatients();
+    // Auto-fetch real game sessions from backend
+    fetchSessionHistory(selectedPatient?.id);
     // Initialize Socket.io connection to hardware gateway
     useHardwareSocketStore.getState().connect();
     // Initialize unified hardware input adapter (unbound to games)
     hardwareInputAdapter.initialize();
-  }, [fetchMe]);
+  }, [fetchMe, fetchPatients, fetchSessionHistory, selectedPatient?.id]);
 
   const handleStartActivity = (type: ActivityType) => {
     setSelectedActivity(type);
@@ -64,34 +69,28 @@ export const App: React.FC = () => {
     setViewMode('login');
   };
 
-  // 1. PRIMARY ENTRY: Dedicated Official Government Login Page
-  // (Website homepage is COMPLETELY NOT SHOWN in background)
-  if (viewMode === 'login') {
-    return (
-      <LoginPage
-        onLoginSuccess={handleOpenAppAuth}
-        onBrowsePublicPortal={() => setViewMode('public_portal')}
-      />
-    );
-  }
-
-  // 2. PUBLIC PORTAL: Official NER Government Healthcare Information Portal
+  // 1. PUBLIC PORTAL: Primary entry landing page
   if (viewMode === 'public_portal') {
     return (
       <>
         <ForceTranslationListener />
-        {/* Top return strip */}
-        <div className="bg-[#0A2540] text-white py-2 px-4 sm:px-8 text-xs font-bold flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-md">
-          <button
-            onClick={() => setViewMode('login')}
-            className="hover:underline flex items-center gap-1.5 text-amber-300 font-extrabold cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" /> Return to Smriti-Setu Platform Login
-          </button>
+        {/* Top return strip with prominent Gateway Login button */}
+        <div className="bg-[#002B49] text-white py-2 px-4 sm:px-8 text-xs font-bold flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-md">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-300 hidden sm:inline font-mono">
-              National Health Mission · NER Health Portal
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
+            <span className="text-xs text-amber-300 font-bold tracking-wide">
+              SMRITI-SETU · Public Health Information & Cognitive Care Portal
             </span>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setViewMode('login')}
+              className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-4 py-1 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer shadow-sm text-xs hover:scale-105 active:scale-95"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Go to Login / Dashboard Gateway →</span>
+            </button>
           </div>
         </div>
 
@@ -116,29 +115,50 @@ export const App: React.FC = () => {
     );
   }
 
+  // 2. DEDICATED LOGIN PAGE (Opened when user clicks login or signs out)
+  if (viewMode === 'login') {
+    return (
+      <LoginPage
+        onLoginSuccess={handleOpenAppAuth}
+        onBrowsePublicPortal={() => setViewMode('public_portal')}
+      />
+    );
+  }
+
   // 3. AUTHENTICATED SMRITI-SETU APPLICATION (Patient, Caregiver, Doctor, Admin)
   return (
     <div className="relative min-h-screen bg-slate-50">
       <ForceTranslationListener />
-      {/* Return to Public Government Portal Banner Strip */}
-      <div className="bg-govNavy-dark text-white py-2 px-4 text-xs font-bold flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-md">
-        <button
-          onClick={() => setViewMode('public_portal')}
-          className="hover:underline flex items-center gap-1.5 text-amber-300 font-extrabold cursor-pointer"
-        >
-          <ArrowLeft className="w-4 h-4" /> {t('portal.returnToOfficial', 'Return to Official Government Health Portal')}
-        </button>
+      {/* Top Banner Navigation Strip */}
+      <div className="bg-[#002B49] text-white py-1.5 px-3 sm:px-6 text-xs font-bold flex items-center justify-between border-b border-slate-700 sticky top-0 z-50 shadow-sm">
         <div className="flex items-center gap-3">
-          <span className="text-slate-200 font-semibold hidden sm:inline bg-govNavy px-3 py-0.5 rounded-full border border-slate-600">
-            {t('portal.authenticatedRole', 'Authenticated Role')}: <strong className="text-white uppercase">{t(`roles.${role}`, role)}</strong>
-            {systemRole === 'admin' && <span className="ml-1 px-1.5 py-0.5 text-[10px] bg-red-600 text-white rounded font-bold">ADMIN</span>}
+          <button
+            onClick={() => setViewMode('public_portal')}
+            className="hover:underline flex items-center gap-1.5 text-amber-300 font-extrabold cursor-pointer text-[11px] sm:text-xs"
+          >
+            <Globe className="w-3.5 h-3.5" /> Public Information Portal
+          </button>
+          <span className="text-slate-500 hidden md:inline">|</span>
+          <button
+            onClick={() => setViewMode('login')}
+            className="text-slate-300 hover:text-white text-[11px] sm:text-xs hidden sm:inline-flex items-center gap-1 cursor-pointer"
+            title="Open Sign In or Switch Account"
+          >
+            <User className="w-3 h-3" /> Sign In / Role Gateway
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-slate-200 font-semibold text-[11px] sm:text-xs bg-[#001D33] px-2.5 py-0.5 rounded-full border border-slate-600">
+            Active Persona: <strong className="text-amber-300 uppercase">{t(`roles.${role}`, role)}</strong>
+            {systemRole === 'admin' && <span className="ml-1.5 px-1.5 py-0.2 text-[9px] bg-red-600 text-white rounded font-black">ADMIN</span>}
           </span>
           <button
             onClick={handleSignOut}
-            className="text-xs bg-red-600 hover:bg-red-700 text-white px-2.5 py-1 rounded flex items-center gap-1 transition-colors cursor-pointer"
-            title="Sign Out"
+            className="text-[11px] bg-rose-600 hover:bg-rose-700 text-white px-2.5 py-1 rounded-lg flex items-center gap-1 font-bold transition-colors cursor-pointer"
+            title="Sign Out to Login Gateway"
           >
-            <LogOut className="w-3.5 h-3.5" /> Sign Out
+            <LogOut className="w-3 h-3" /> Sign Out
           </button>
         </div>
       </div>

@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import {
   PatientProfile,
   CognitiveActivity,
@@ -49,6 +51,11 @@ class BackendDataStore {
   private reminders: Reminder[] = [];
   private sessions: GameSession[] = [];
 
+  // Data file paths for persistent storage
+  private dataDir = path.resolve(process.cwd(), 'data');
+  private sessionsFilePath = path.join(this.dataDir, 'sessions.json');
+  private patientsFilePath = path.join(this.dataDir, 'patients.json');
+
   // Portal static/dynamic data
   private states: NERState[] = [];
   private facilities: HealthFacility[] = [];
@@ -60,6 +67,94 @@ class BackendDataStore {
 
   constructor() {
     this.reset();
+    this.loadPatientsFromDisk();
+    this.loadSessionsFromDisk();
+  }
+
+  private ensureDataDir() {
+    if (!fs.existsSync(this.dataDir)) {
+      try {
+        fs.mkdirSync(this.dataDir, { recursive: true });
+      } catch (err) {
+        console.error('[DATA STORE] Could not create data directory:', err);
+      }
+    }
+  }
+
+  private loadPatientsFromDisk() {
+    this.ensureDataDir();
+    try {
+      if (fs.existsSync(this.patientsFilePath)) {
+        const raw = fs.readFileSync(this.patientsFilePath, 'utf-8');
+        const parsed: PatientProfile[] = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          parsed.forEach((p) => this.patients.set(p.id, p));
+          console.log(`[DATA STORE] Loaded ${this.patients.size} persistent patient profiles from disk.`);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('[DATA STORE] Failed to read patients.json, using defaults', e);
+    }
+    this.savePatientsToDisk();
+  }
+
+  public savePatientsToDisk() {
+    this.ensureDataDir();
+    try {
+      const patientList = Array.from(this.patients.values());
+      fs.writeFileSync(this.patientsFilePath, JSON.stringify(patientList, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('[DATA STORE] Failed to write patients.json to disk', e);
+    }
+  }
+
+  private deduplicateSessions(sessions: GameSession[]): GameSession[] {
+    const unique: GameSession[] = [];
+    sessions.forEach((item) => {
+      const itemTime = new Date(item.timestamp).getTime();
+      const isDup = unique.some((existing) => {
+        if (existing.id === item.id) return true;
+        if (existing.patientId === item.patientId && existing.activityType === item.activityType) {
+          const exTime = new Date(existing.timestamp).getTime();
+          return Math.abs(itemTime - exTime) < 4000;
+        }
+        return false;
+      });
+      if (!isDup) {
+        unique.push(item);
+      }
+    });
+    return unique;
+  }
+
+  private loadSessionsFromDisk() {
+    this.ensureDataDir();
+    try {
+      if (fs.existsSync(this.sessionsFilePath)) {
+        const raw = fs.readFileSync(this.sessionsFilePath, 'utf-8');
+        const parsed: GameSession[] = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.sessions = this.deduplicateSessions(parsed);
+          console.log(`[DATA STORE] Loaded ${this.sessions.length} unique persistent game sessions from disk.`);
+          this.saveSessionsToDisk();
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('[DATA STORE] Failed to read sessions.json, using defaults', e);
+    }
+    this.saveSessionsToDisk();
+  }
+
+  public saveSessionsToDisk() {
+    this.ensureDataDir();
+    try {
+      const deduped = this.deduplicateSessions(this.sessions);
+      fs.writeFileSync(this.sessionsFilePath, JSON.stringify(deduped, null, 2), 'utf-8');
+    } catch (e) {
+      console.error('[DATA STORE] Failed to write sessions.json to disk', e);
+    }
   }
 
   public reset() {
@@ -100,6 +195,7 @@ class BackendDataStore {
 
   public addPatient(patient: PatientProfile): PatientProfile {
     this.patients.set(patient.id, patient);
+    this.savePatientsToDisk();
     return patient;
   }
 
@@ -114,6 +210,7 @@ class BackendDataStore {
         : existing.hierarchy,
     };
     this.patients.set(id, updated);
+    this.savePatientsToDisk();
     return updated;
   }
 
@@ -200,7 +297,19 @@ class BackendDataStore {
       completed: session.completed !== undefined ? session.completed : true,
     };
 
-    this.sessions.unshift(newSession);
+    const newTime = new Date(newSession.timestamp).getTime();
+    this.sessions = [
+      newSession,
+      ...this.sessions.filter((s) => {
+        if (s.id === newSession.id) return false;
+        if (s.patientId === newSession.patientId && s.activityType === newSession.activityType) {
+          const sTime = new Date(s.timestamp).getTime();
+          if (Math.abs(newTime - sTime) < 4000) return false;
+        }
+        return true;
+      }),
+    ];
+    this.saveSessionsToDisk();
 
     // Calculate adaptive difficulty based on recent patient sessions
     const patientHistory = this.getSessions(newSession.patientId);

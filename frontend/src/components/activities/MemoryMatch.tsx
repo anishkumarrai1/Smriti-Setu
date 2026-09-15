@@ -118,6 +118,7 @@ export const MemoryMatch: React.FC<MemoryMatchProps> = ({ onComplete, onBack }) 
   const audioCtxRef = useRef<AudioContext | null>(null);
   const countdownTimerRef = useRef<any>(null);
   const timeoutsRef = useRef<number[]>([]);
+  const hasCompletedRef = useRef(false);
 
   // Clear all pending timeouts and intervals cleanly
   const clearAllTimers = useCallback(() => {
@@ -263,6 +264,7 @@ export const MemoryMatch: React.FC<MemoryMatchProps> = ({ onComplete, onBack }) 
     setIsMemorizingPhase(true);
     setIsSwapping(false);
     setCountdown(5);
+    hasCompletedRef.current = false;
 
     // 1. Cascade-flip all 12 cards face-UP ONE BY ONE from starting (0) to end (11)
     doubled.forEach((_, idx) => {
@@ -368,23 +370,24 @@ export const MemoryMatch: React.FC<MemoryMatchProps> = ({ onComplete, onBack }) 
             )
           );
           setFlippedCards([]);
-          setMatchedPairs((prev) => {
-            const nextCount = prev + 1;
-            if (nextCount === cardPairs.length) {
-              const elapsed = Date.now() - startTime;
-              const accuracy = Math.max(
-                60,
-                Math.min(
-                  100,
-                  Math.round((cardPairs.length / Math.max(attempts + 1, cardPairs.length)) * 100)
-                )
-              );
-              playGrandCelebrationSound();
-              setIsFinished(true);
-              onComplete(accuracy, attempts + 1, elapsed);
-            }
-            return nextCount;
-          });
+          
+          const nextCount = matchedPairs + 1;
+          setMatchedPairs(nextCount);
+
+          if (nextCount >= cardPairs.length && !hasCompletedRef.current) {
+            hasCompletedRef.current = true;
+            const elapsed = Date.now() - startTime;
+            const accuracy = Math.max(
+              60,
+              Math.min(
+                100,
+                Math.round((cardPairs.length / Math.max(attempts + 1, cardPairs.length)) * 100)
+              )
+            );
+            playGrandCelebrationSound();
+            setIsFinished(true);
+            onComplete(accuracy, attempts + 1, elapsed);
+          }
         }, 400);
       } else {
         // Not matched: Gentle flip back

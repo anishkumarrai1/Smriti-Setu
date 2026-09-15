@@ -376,7 +376,7 @@ export const PatientSwitcherModal: React.FC<PatientSwitcherModalProps> = ({
         {/* Modal Footer */}
         <div className="p-4 bg-slate-100 border-t border-slate-200 flex items-center justify-between shrink-0">
           <span className="text-[11px] text-slate-500 font-medium">
-            Smriti-Setu Multi-Patient Framework · Government of India
+            Smriti-Setu Multi-Patient Framework · Cognitive Health System
           </span>
           <button
             onClick={onClose}

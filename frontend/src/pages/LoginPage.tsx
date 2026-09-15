@@ -146,41 +146,42 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       
       {/* 1. Official Government Header Strip */}
       <header className="bg-[#002B49] text-white shadow-sm border-b border-slate-700/50 shrink-0">
-        <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
+        <div className="w-full max-w-5xl mx-auto px-3.5 sm:px-6 py-2 sm:py-2.5 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <IndianFlagBadge />
             <div className="flex flex-col">
               <span className="text-[11px] sm:text-xs font-black uppercase tracking-wider text-amber-300">
-                भारत सरकार · Government of India
+                भारत सरकार · GOI
               </span>
-              <span className="text-[10px] sm:text-[11px] text-slate-300 font-medium hidden sm:inline">
-                Ministry of Health & Family Welfare · National Health Mission (NHM)
+              <span className="text-[10px] sm:text-[11px] text-slate-300 font-medium hidden md:inline">
+                Ministry of Health & Family Welfare · NHM
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => openAuthModal('signup')}
-              className="text-xs font-bold text-emerald-300 hover:text-white bg-emerald-950/70 hover:bg-emerald-900 px-3 py-1.5 rounded-lg border border-emerald-500/40 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+              className="text-[11px] sm:text-xs font-bold text-emerald-300 hover:text-white bg-emerald-950/70 hover:bg-emerald-900 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-emerald-500/40 flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer shadow-2xs"
             >
-              <UserPlus className="w-3.5 h-3.5" />
-              <span>Create New Account (OTP)</span>
+              <UserPlus className="w-3.5 h-3.5 shrink-0" />
+              <span>Register</span>
+              <span className="hidden sm:inline">New (OTP)</span>
             </button>
 
             <button
               onClick={onBrowsePublicPortal}
-              className="text-xs font-bold text-slate-100 hover:text-white bg-[#003366] hover:bg-[#002244] px-3.5 py-1.5 rounded-lg border border-blue-400/30 flex items-center gap-1.5 transition-all cursor-pointer shadow-2xs"
+              className="text-[11px] sm:text-xs font-bold text-slate-100 hover:text-white bg-[#003366] hover:bg-[#002244] px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg border border-blue-400/30 flex items-center gap-1 sm:gap-1.5 transition-all cursor-pointer shadow-2xs"
             >
-              <span>Public Health Portal</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Public Portal</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </button>
           </div>
         </div>
       </header>
 
       {/* 2. Symmetrical, High-Visibility Center Login Box */}
-      <main className="w-full max-w-lg mx-auto px-4 py-6 my-auto">
+      <main className="w-full max-w-lg mx-auto px-3.5 sm:px-4 py-4 sm:py-6 my-auto">
         <div className="bg-white rounded-2xl shadow-xl border border-slate-300 overflow-hidden flex flex-col">
           
           {/* Subtle National Tricolor Line */}
@@ -191,36 +192,36 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
 
           {/* Clean Portal Header */}
-          <div className="bg-[#003366] text-white px-6 py-5 text-center space-y-1.5 shrink-0">
-            <div className="inline-flex p-1.5 bg-white rounded-xl shadow-xs mb-1">
-              <AshokaEmblem className="w-7 h-10" />
+          <div className="bg-[#003366] text-white px-4 sm:px-6 py-4 sm:py-5 text-center space-y-1 sm:space-y-1.5 shrink-0">
+            <div className="inline-flex p-1 sm:p-1.5 bg-white rounded-xl shadow-xs mb-0.5 sm:mb-1">
+              <AshokaEmblem className="w-6 h-8 sm:w-7 sm:h-10" />
             </div>
-            <h1 className="text-2xl font-serif font-bold text-white tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-serif font-bold text-white tracking-tight">
               Smriti-Setu Platform Login
             </h1>
-            <p className="text-xs text-slate-200 font-medium">
+            <p className="text-[11px] sm:text-xs text-slate-200 font-medium">
               National Cognitive Health & Memory Assistance Framework
             </p>
           </div>
 
           {/* Login Form Body */}
-          <div className="p-6 sm:p-7 space-y-5 bg-[#FAFBFD]">
+          <div className="p-4 sm:p-7 space-y-4 sm:space-y-5 bg-[#FAFBFD]">
             
             {/* Error Message banner */}
             {errorMsg && (
-              <div className="p-3.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2 animate-shake">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2 animate-shake">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
-            {/* 4 Clear Role Selector Tabs including Admin */}
+            {/* 4 Clear Role Selector Tabs including Admin (2x2 on mobile, 4-col on sm+) */}
             <div className="space-y-1.5">
-              <label className="block text-[11px] font-black uppercase tracking-wider text-slate-600 text-center">
+              <label className="block text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-slate-600 text-center">
                 Select Login Persona
               </label>
               
-              <div className="grid grid-cols-4 gap-1 bg-slate-200/80 p-1 rounded-xl border border-slate-300">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-slate-200/80 p-1.5 rounded-xl border border-slate-300">
                 {(['patient', 'caregiver', 'clinician', 'admin'] as LoginRole[]).map((r) => {
                   const isSelected = selectedRole === r;
                   const info = roleDetails[r];
@@ -231,7 +232,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                       key={r}
                       type="button"
                       onClick={() => handleSelectRole(r)}
-                      className={`py-2 px-1.5 rounded-lg text-[11px] font-black flex items-center justify-center gap-1 transition-all cursor-pointer select-none ${
+                      className={`py-2 px-2 rounded-lg text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer select-none ${
                         isSelected
                           ? info.activeTabClass
                           : 'text-slate-700 hover:text-slate-950 hover:bg-white/60'

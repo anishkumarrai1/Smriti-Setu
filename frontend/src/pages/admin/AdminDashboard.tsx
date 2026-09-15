@@ -42,6 +42,9 @@ export const AdminDashboard: React.FC = () => {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [loginLogs, setLoginLogs] = useState<any[]>([]);
 
+  // Notification feedback state
+  const [notificationMsg, setNotificationMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   // Password reset modal state
   const [resetModalUser, setResetModalUser] = useState<any | null>(null);
   const [newPasswordInput, setNewPasswordInput] = useState('');
@@ -84,11 +87,22 @@ export const AdminDashboard: React.FC = () => {
     const nextStatus = currentStatus === 'active' ? 'suspended' : 'active';
     if (!window.confirm(`Are you sure you want to change account status to ${nextStatus.toUpperCase()}?`)) return;
 
+    // Optimistic UI state update
+    setUsersList((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, accountStatus: nextStatus } : u))
+    );
+
     try {
-      await adminApi.updateUserStatus(userId, nextStatus as any);
-      loadData();
+      const res = await adminApi.updateUserStatus(userId, nextStatus as any);
+      setNotificationMsg({
+        type: 'success',
+        text: res.message || `User account status updated to ${nextStatus.toUpperCase()} successfully!`,
+      });
+      setTimeout(() => setNotificationMsg(null), 4000);
+      await loadData();
     } catch (err: any) {
       alert(err?.response?.data?.error || 'Failed to update user status');
+      await loadData();
     }
   };
 
@@ -239,6 +253,21 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div className="space-y-8 md:space-y-10 animate-in fade-in duration-500 max-w-7xl mx-auto">
       
+      {/* Toast / Notification Banner */}
+      {notificationMsg && (
+        <div className={`p-4 rounded-2xl flex items-center justify-between gap-3 shadow-lg border animate-in slide-in-from-top-2 ${
+          notificationMsg.type === 'success' ? 'bg-emerald-900/90 text-emerald-100 border-emerald-500' : 'bg-rose-900/90 text-rose-100 border-rose-500'
+        }`}>
+          <div className="flex items-center gap-2.5 font-bold text-xs">
+            {notificationMsg.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" /> : <AlertTriangle className="w-5 h-5 text-rose-400 shrink-0" />}
+            <span>{notificationMsg.text}</span>
+          </div>
+          <button onClick={() => setNotificationMsg(null)} className="text-slate-300 hover:text-white cursor-pointer">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* 1. Admin Hero Header */}
       <div className="bg-[#031326] text-white p-6 md:p-8 rounded-3xl border border-slate-700 shadow-xl space-y-4 relative overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
@@ -249,7 +278,7 @@ export const AdminDashboard: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] font-black uppercase tracking-widest text-amber-400 bg-amber-950/60 px-2.5 py-0.5 rounded-full border border-amber-400/40">
-                  National Health Mission (NHM) · Security Node
+                  Smriti-Setu Platform · Security & Identity Hub
                 </span>
                 <span className="text-xs text-emerald-400 font-mono hidden sm:inline">Node: NER-ADMIN-01</span>
               </div>
@@ -257,7 +286,7 @@ export const AdminDashboard: React.FC = () => {
                 Admin User Analytics & Audit Hub
               </h1>
               <p className="text-xs sm:text-sm text-slate-300">
-                Track registered users, login history, and export complete database records into Excel (CSV) or MongoDB JSON.
+                Track registered users, login history, manage account statuses, and export complete database records into Excel (CSV) or MongoDB JSON.
               </p>
             </div>
           </div>
@@ -451,22 +480,47 @@ export const AdminDashboard: React.FC = () => {
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
-                  placeholder="Search user..."
+                  placeholder="Search by name, email, phone..."
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-none"
+                  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]/20"
                 />
               </div>
 
               <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white"
+              >
+                <option value="all">All Roles</option>
+                <option value="patient">Patients</option>
+                <option value="caregiver">Caregivers</option>
+                <option value="clinician">Clinicians / Doctors</option>
+                <option value="admin">System Admins</option>
+              </select>
+
+              <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active Accounts</option>
                 <option value="suspended">Suspended Accounts</option>
               </select>
+
+              {(userSearch || roleFilter !== 'all' || statusFilter !== 'all') && (
+                <button
+                  onClick={() => {
+                    setUserSearch('');
+                    setRoleFilter('all');
+                    setStatusFilter('all');
+                  }}
+                  className="text-xs font-bold text-slate-500 hover:text-slate-800 underline px-1 cursor-pointer"
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           </div>
 
@@ -486,7 +540,7 @@ export const AdminDashboard: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {usersList.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={u.id} className={`transition-colors ${u.accountStatus === 'suspended' ? 'bg-rose-50/40 hover:bg-rose-50/70' : 'hover:bg-slate-50'}`}>
                     <td className="py-3.5 px-4">
                       <div className="font-black text-slate-900">{u.fullName}</div>
                       <div className="text-[10px] font-mono text-slate-500">{u.id}</div>
@@ -550,10 +604,17 @@ export const AdminDashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold capitalize ${
-                        u.accountStatus === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase flex items-center gap-1 w-fit ${
+                        u.accountStatus === 'active'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border border-rose-300 ring-2 ring-rose-200'
                       }`}>
-                        {u.accountStatus}
+                        {u.accountStatus === 'active' ? (
+                          <CheckCircle2 className="w-3 h-3 text-emerald-700" />
+                        ) : (
+                          <Ban className="w-3 h-3 text-rose-700" />
+                        )}
+                        <span>{u.accountStatus}</span>
                       </span>
                     </td>
                     <td className="py-3.5 px-4 font-mono text-slate-500">
@@ -573,13 +634,23 @@ export const AdminDashboard: React.FC = () => {
                         {u.role !== 'admin' && (
                           <button
                             onClick={() => handleToggleStatus(u.id, u.accountStatus)}
-                            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer text-center ${
+                            className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all cursor-pointer text-center flex items-center justify-center gap-1 ${
                               u.accountStatus === 'active'
-                                ? 'bg-rose-100 hover:bg-rose-200 text-rose-800'
-                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                                ? 'bg-rose-100 hover:bg-rose-200 text-rose-800 border border-rose-300'
+                                : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800 border border-emerald-300'
                             }`}
                           >
-                            {u.accountStatus === 'active' ? 'Suspend' : 'Activate'}
+                            {u.accountStatus === 'active' ? (
+                              <>
+                                <Ban className="w-3 h-3" />
+                                <span>Suspend</span>
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle2 className="w-3 h-3" />
+                                <span>Activate</span>
+                              </>
+                            )}
                           </button>
                         )}
                       </div>

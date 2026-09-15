@@ -203,9 +203,26 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       const backendHistory = await gameApi.getSessionHistory(patientId);
       if (Array.isArray(backendHistory) && backendHistory.length > 0) {
         const local = get().sessionHistory;
-        const map = new Map<string, GameSession>();
-        [...backendHistory, ...local].forEach((item) => map.set(item.id, item));
-        const merged = Array.from(map.values()).sort(
+        const allItems = [...backendHistory, ...local];
+        
+        // Deduplicate by ID and by timestamp proximity (<= 4s) for same patient & activity
+        const uniqueSessions: GameSession[] = [];
+        allItems.forEach((item) => {
+          const itemTime = new Date(item.timestamp).getTime();
+          const isDup = uniqueSessions.some((existing) => {
+            if (existing.id === item.id) return true;
+            if (existing.patientId === item.patientId && existing.activityType === item.activityType) {
+              const exTime = new Date(existing.timestamp).getTime();
+              return Math.abs(itemTime - exTime) < 4000;
+            }
+            return false;
+          });
+          if (!isDup) {
+            uniqueSessions.push(item);
+          }
+        });
+
+        const merged = uniqueSessions.sort(
           (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         );
         localStorage.setItem(LOCAL_STORAGE_SESSIONS_KEY, JSON.stringify(merged));
@@ -256,7 +273,18 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
       difficultyAdjusted: false,
     };
 
-    const updatedHistory = [completedSession, ...sessionHistory.filter((s) => s.id !== completedSession.id)];
+    // Filter out duplicates within 4 seconds for the same patient & activity
+    const nowMs = Date.now();
+    const filteredHistory = sessionHistory.filter((s) => {
+      if (s.id === completedSession.id) return false;
+      if (s.patientId === completedSession.patientId && s.activityType === completedSession.activityType) {
+        const sTime = new Date(s.timestamp).getTime();
+        if (Math.abs(nowMs - sTime) < 4000) return false;
+      }
+      return true;
+    });
+
+    const updatedHistory = [completedSession, ...filteredHistory];
     const adaptResult = calculateNextDifficulty(currentDifficulty, updatedHistory);
 
     completedSession.difficultyLevel = adaptResult.nextDifficulty;

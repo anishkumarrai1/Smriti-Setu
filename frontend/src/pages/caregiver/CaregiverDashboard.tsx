@@ -282,7 +282,7 @@ export const CaregiverDashboard: React.FC = () => {
             />
             <div>
               <span className="text-xs font-black uppercase tracking-wider text-[#003366]">
-                Caregiver Monitoring Portal · Government of India
+                Caregiver Monitoring Portal · Smriti-Setu Platform
               </span>
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900 mt-0.5">
                 {selectedPatient.name}
@@ -520,10 +520,10 @@ export const CaregiverDashboard: React.FC = () => {
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  domain={[0, 6]}
+                  domain={[0, 'auto']}
                   stroke="#2563EB"
                   fontSize={11}
-                  tickFormatter={(v) => `${v}s`}
+                  tickFormatter={(v) => `${Number(v).toFixed(0)}s`}
                 />
                 <Tooltip
                   content={({ active, payload }) => {

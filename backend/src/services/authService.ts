@@ -546,6 +546,18 @@ class AuthService {
     this.saveToDisk();
     return user;
   }
+
+  public updateUserProfile(userId: string, updates: Partial<UserRecord>): UserRecord | undefined {
+    const user = this.usersMap.get(userId);
+    if (!user) return undefined;
+    if (updates.fullName) user.fullName = updates.fullName;
+    if (updates.avatarUrl) user.avatarUrl = updates.avatarUrl;
+    if (updates.mobileNumber) user.mobileNumber = updates.mobileNumber;
+    user.updatedAt = new Date().toISOString();
+    this.usersMap.set(userId, user);
+    this.saveToDisk();
+    return user;
+  }
 }
 
 export const authService = new AuthService();

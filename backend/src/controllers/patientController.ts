@@ -120,6 +120,13 @@ export const updatePatientDetails = (req: Request, res: Response) => {
       res.status(404).json({ error: `Patient with ID '${patientId}' not found` });
       return;
     }
+
+    // Synchronize corresponding auth user if exists
+    authService.updateUserProfile(patientId, {
+      fullName: updated.name,
+      avatarUrl: updated.avatarUrl,
+    });
+
     res.json(updated);
   } catch (error: any) {
     res.status(500).json({ error: 'Failed to update patient details', details: error.message });

@@ -58,16 +58,16 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
   return (
     <header className="bg-white border-b border-slate-300 sticky top-0 z-40 transition-all shadow-xs">
       
-      {/* 1. Official Government Top Strip */}
+      {/* 1. Platform Status & Session Top Strip */}
       <div className="bg-[#002B49] text-white text-[11px] py-1.5 px-4 sm:px-8 border-b border-slate-700/50">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <IndianFlagBadge />
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block"></span>
             <span className="font-bold tracking-wider text-amber-300 uppercase">
-              भारत सरकार · Government of India
+              SMRITI-SETU · Cognitive Care Platform
             </span>
             <span className="hidden md:inline text-slate-300">
-              | National Health Mission (NHM) · North Eastern Council
+              | Adaptive Brain Stimulation & Memory Archive
             </span>
           </div>
 
@@ -99,37 +99,65 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
       </div>
 
       {/* 2. Main Branding & Controls Bar */}
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-2.5 flex flex-col xl:flex-row xl:items-center justify-between gap-3">
+      <div className="w-full max-w-7xl mx-auto px-3.5 sm:px-8 py-2 sm:py-2.5 flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3">
         
         {/* Emblem & Portal Title */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-300 flex items-center justify-center p-1 shadow-xs shrink-0">
-            <AshokaEmblem className="w-6 h-8" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-bold text-xl sm:text-2xl tracking-tight text-[#003366] font-serif">
-                SMRITI-SETU
-              </h1>
-              <span className="bg-blue-50 text-[#003366] text-xs font-black px-2 py-0.5 rounded border border-blue-200">
-                {selectedPatient.hierarchy.state} Care Node
-              </span>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-slate-50 border border-slate-300 flex items-center justify-center p-1 shadow-xs shrink-0">
+              <AshokaEmblem className="w-5 h-7 sm:w-6 sm:h-8" />
             </div>
-            <p className="text-[11px] font-semibold text-slate-600">
-              National Cognitive Health & Memory Assistance Framework
-            </p>
+            <div>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <h1 className="font-bold text-lg sm:text-2xl tracking-tight text-[#003366] font-serif">
+                  SMRITI-SETU
+                </h1>
+                <span className="bg-blue-50 text-[#003366] text-[10px] sm:text-xs font-black px-1.5 sm:px-2 py-0.5 rounded border border-blue-200">
+                  {selectedPatient.hierarchy.state}
+                </span>
+              </div>
+              <p className="text-[10px] sm:text-[11px] font-semibold text-slate-600 truncate max-w-[220px] sm:max-w-none">
+                National Cognitive Health & Memory Framework
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile-only Patient Avatar / Switcher quick trigger */}
+          <div className="lg:hidden shrink-0">
+            {role === 'patient' ? (
+              <button
+                onClick={() => setIsProfileModalOpen(true)}
+                className="flex items-center gap-1.5 p-1 bg-white hover:bg-slate-50 rounded-lg border border-slate-300 shadow-2xs cursor-pointer"
+                title="View/Edit Profile"
+              >
+                <img
+                  src={selectedPatient.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
+                  alt={selectedPatient.name}
+                  className="w-7 h-7 rounded-full object-cover border border-[#003366]"
+                />
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsPatientModalOpen(true)}
+                className="flex items-center gap-1 text-[11px] font-bold text-slate-800 bg-white hover:bg-slate-50 px-2 py-1 rounded-lg border border-slate-300 shadow-2xs cursor-pointer"
+                title="Switch Active Patient"
+              >
+                <User className="w-3.5 h-3.5 text-[#003366]" />
+                <span className="max-w-[70px] truncate">{selectedPatient.name.split(' ')[0]}</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Controls: Role Switcher & Language */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 xl:pb-0 shrink-0 flex-nowrap">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 lg:pb-0 shrink-0 flex-nowrap no-scrollbar">
           <RoleSwitcher />
           <LanguageSelector />
         </div>
       </div>
 
-      {/* 3. Navigation Bar */}
-      <div className="border-t border-slate-200 bg-[#F8FAFC]">
+      {/* 3. Desktop Sub-Navigation Bar (Hidden on mobile < md as mobile bottom bar handles it) */}
+      <div className="border-t border-slate-200 bg-[#F8FAFC] hidden md:block">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-8 py-2 flex items-center justify-between overflow-x-auto gap-4">
           <nav className="flex items-center space-x-1 sm:space-x-2">
             {navItems.map((item) => {

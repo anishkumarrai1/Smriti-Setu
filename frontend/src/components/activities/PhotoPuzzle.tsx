@@ -183,6 +183,7 @@ export const PhotoPuzzle: React.FC<PhotoPuzzleProps> = ({ onComplete, onBack }) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const hasCompletedRef = useRef(false);
 
   // Puzzle photo state (defaulting to the cute puppy from reference)
   const [photoUrl, setPhotoUrl] = useState<string>(PRESET_MEMORIES[0].url);
@@ -308,36 +309,39 @@ export const PhotoPuzzle: React.FC<PhotoPuzzleProps> = ({ onComplete, onBack }) 
         return;
       }
 
-      setMoveCount((m) => m + 1);
+      const nextMoveCount = moveCount + 1;
+      setMoveCount(nextMoveCount);
       playSound(587.33, 0.15, 'sine');
 
-      setBoardPieces((prev) => {
-        const next = [...prev];
-        const temp = next[slotA];
-        next[slotA] = next[slotB];
-        next[slotB] = temp;
+      const currentPieces = [...boardPieces];
+      const temp = currentPieces[slotA];
+      currentPieces[slotA] = currentPieces[slotB];
+      currentPieces[slotB] = temp;
 
-        const isSolved = next.every((pieceIdx, idx) => pieceIdx === idx);
-        if (isSolved) {
+      const isSolved = currentPieces.every((pieceIdx, idx) => pieceIdx === idx);
+      setBoardPieces(currentPieces);
+
+      if (isSolved) {
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
           playKindHeartedMelody();
           setIsCompleted(true);
           const elapsed = Date.now() - startTime;
           const accuracy = Math.max(
             75,
-            Math.min(100, Math.round((TOTAL_PIECES / Math.max(moveCount + 1, TOTAL_PIECES)) * 100))
+            Math.min(100, Math.round((TOTAL_PIECES / Math.max(nextMoveCount, TOTAL_PIECES)) * 100))
           );
-          onComplete(accuracy, moveCount + 1, elapsed);
-        } else {
-          if (next[slotA] === slotA || next[slotB] === slotB) {
-            playSound(783.99, 0.18, 'triangle');
-          }
+          onComplete(accuracy, nextMoveCount, elapsed);
         }
-        return next;
-      });
+      } else {
+        if (currentPieces[slotA] === slotA || currentPieces[slotB] === slotB) {
+          playSound(783.99, 0.18, 'triangle');
+        }
+      }
 
       setSelectedSlot(null);
     },
-    [moveCount, onComplete, playKindHeartedMelody, startTime]
+    [boardPieces, moveCount, onComplete, playKindHeartedMelody, startTime]
   );
 
   // Direct Pointer Down (Start dragging or selecting)
@@ -423,6 +427,7 @@ export const PhotoPuzzle: React.FC<PhotoPuzzleProps> = ({ onComplete, onBack }) 
     setDragState(null);
     setHoverSlot(null);
     setIsCompleted(false);
+    hasCompletedRef.current = false;
     setMoveCount(0);
     setStartTime(Date.now());
     setElapsedSeconds(0);
