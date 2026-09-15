@@ -24,37 +24,34 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   const patientNav = [
-    { id: 'home', labelKey: 'navigation.home' },
-    { id: 'memories', labelKey: 'navigation.memories' },
-    { id: 'reminders', labelKey: 'navigation.reminders' },
+    { id: 'home', labelKey: 'navigation.home', defaultLabel: 'Home & Activities' },
+    { id: 'memories', labelKey: 'navigation.memories', defaultLabel: 'Memory Garden' },
+    { id: 'reminders', labelKey: 'navigation.reminders', defaultLabel: 'Reminders & Routine' },
   ];
 
   const caregiverNav = [
-    { id: 'home', labelKey: 'navigation.home' },
-    { id: 'memories', labelKey: 'navigation.memories' },
-    { id: 'reminders', labelKey: 'navigation.reminders' },
+    { id: 'home', labelKey: 'navigation.home', defaultLabel: 'Daily Care Overview' },
+    { id: 'memories', labelKey: 'navigation.memories', defaultLabel: 'Memory Archive' },
+    { id: 'reminders', labelKey: 'navigation.reminders', defaultLabel: 'Care Reminders' },
   ];
 
   const clinicianNav = [
-    { id: 'analytics', labelKey: 'navigation.analytics' },
+    { id: 'analytics', labelKey: 'navigation.analytics', defaultLabel: 'Clinical Assessment & Analytics 🩺' },
   ];
 
   const adminNav = [
-    { id: 'facility', labelKey: 'navigation.facility' },
-    { id: 'analytics', labelKey: 'navigation.analytics' },
+    { id: 'admin', labelKey: 'Admin Security Hub', defaultLabel: 'Admin Security & User Hub 🛡️' },
+    { id: 'facility', labelKey: 'navigation.facility', defaultLabel: 'Facility & Hardware Nodes 🏥' },
   ];
 
-  const baseNavItems = {
-    patient: patientNav,
-    caregiver: caregiverNav,
-    clinician: clinicianNav,
-    facility_admin: adminNav,
-  }[role];
-
-  // If systemRole === 'admin', append Admin Security Console tab
-  const navItems = systemRole === 'admin'
-    ? [...baseNavItems, { id: 'admin', labelKey: 'Admin Audit Console' }]
-    : baseNavItems;
+  const navItems = (systemRole === 'admin' || role === 'facility_admin')
+    ? adminNav
+    : ({
+        patient: patientNav,
+        caregiver: caregiverNav,
+        clinician: clinicianNav,
+        facility_admin: adminNav,
+      }[role] || patientNav);
 
   return (
     <header className="bg-white border-b border-slate-300 sticky top-0 z-40 transition-all shadow-xs">
@@ -163,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
           <nav className="flex items-center space-x-1 sm:space-x-2">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
-              const label = item.id === 'admin' ? 'Admin Audit Console 🛡️' : t(item.labelKey);
+              const label = (item as any).defaultLabel || t(item.labelKey);
               return (
                 <button
                   key={item.id}

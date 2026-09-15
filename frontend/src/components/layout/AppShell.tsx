@@ -54,20 +54,18 @@ export const AppShell: React.FC<AppShellProps> = ({
   ];
 
   const adminNav = [
-    { id: 'facility', labelKey: 'navigation.facility', icon: Building2 },
-    { id: 'analytics', labelKey: 'navigation.analytics', icon: BarChart3 },
+    { id: 'admin', labelKey: 'Admin Console', icon: ShieldAlert },
+    { id: 'facility', labelKey: 'Facility Hub', icon: Building2 },
   ];
 
-  const baseNavItems = {
-    patient: patientNav,
-    caregiver: caregiverNav,
-    clinician: clinicianNav,
-    facility_admin: adminNav,
-  }[role] || patientNav;
-
-  const mobileNavItems = systemRole === 'admin'
-    ? [...baseNavItems, { id: 'admin', labelKey: 'Admin Audit', icon: ShieldAlert }]
-    : baseNavItems;
+  const mobileNavItems = (systemRole === 'admin' || role === 'facility_admin')
+    ? adminNav
+    : ({
+        patient: patientNav,
+        caregiver: caregiverNav,
+        clinician: clinicianNav,
+        facility_admin: adminNav,
+      }[role] || patientNav);
 
   return (
     <div

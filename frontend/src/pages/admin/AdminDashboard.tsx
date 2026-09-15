@@ -332,7 +332,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="pt-4 flex flex-wrap items-center gap-2 border-t border-slate-800">
+        <div className="pt-4 flex items-center gap-2 border-t border-slate-800 overflow-x-auto no-scrollbar pb-1 flex-nowrap">
           {[
             { id: 'overview', label: 'Security Dashboard', icon: Activity },
             { id: 'users', label: `User Directory (${usersList.length || stats?.totalUsers || 0})`, icon: Users },
@@ -345,13 +345,13 @@ export const AdminDashboard: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer ${
+                className={`px-3.5 sm:px-4 py-2 rounded-xl text-xs font-black flex items-center gap-2 transition-all cursor-pointer shrink-0 ${
                   isActive
                     ? 'bg-amber-500 text-slate-950 shadow-md scale-[1.02]'
                     : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4 shrink-0" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -571,16 +571,16 @@ export const AdminDashboard: React.FC = () => {
 
       {/* 3. TAB 1: OVERVIEW & SYSTEM TELEMETRY */}
       {activeTab === 'overview' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
           
           {/* User Verification Matrix (7 cols) */}
-          <div className="lg:col-span-7 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-            <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
+          <div className="lg:col-span-7 bg-white p-5 sm:p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+            <h3 className="font-serif font-bold text-lg sm:text-xl text-slate-900 flex items-center gap-2">
               <UserCheck className="w-5 h-5 text-forest-800" />
               <span>Identity Verification Matrix</span>
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1">
                 <span className="text-xs font-bold text-emerald-800 uppercase block">Email OTP Verification</span>
                 <p className="text-2xl font-black text-emerald-950">{stats?.emailVerifiedCount || 1} Verified</p>
@@ -605,25 +605,25 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Quick Recent Activity Stream (5 cols) */}
-          <div className="lg:col-span-5 bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="lg:col-span-5 bg-white p-5 sm:p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-slate-900 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-forest-800" />
                 <span>Recent Audit Stream</span>
               </h3>
-              <button onClick={() => setActiveTab('activity')} className="text-xs font-bold text-forest-800 hover:underline">
-                View All
+              <button onClick={() => setActiveTab('activity')} className="text-xs font-bold text-forest-800 hover:underline cursor-pointer">
+                View All →
               </button>
             </div>
 
             <div className="space-y-3">
               {loginLogs.slice(0, 5).map((log) => (
-                <div key={log.id} className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs">
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-900 block">{log.identifier}</span>
-                    <span className="text-[10px] text-slate-500 font-mono">{log.authMethod} · {log.ipAddress}</span>
+                <div key={log.id} className="p-3.5 rounded-2xl border border-slate-100 bg-slate-50/70 flex items-center justify-between text-xs gap-2">
+                  <div className="space-y-0.5 min-w-0">
+                    <span className="font-bold text-slate-900 block truncate">{log.identifier}</span>
+                    <span className="text-[10px] text-slate-500 font-mono block truncate">{log.authMethod} · {log.ipAddress}</span>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
                     log.status === 'success' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
                   }`}>
                     {log.status.toUpperCase()}
@@ -642,33 +642,33 @@ export const AdminDashboard: React.FC = () => {
 
       {/* 4. TAB 2: USER DIRECTORY MANAGEMENT */}
       {activeTab === 'users' && (
-        <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
                 <Users className="w-5 h-5 text-forest-800" />
-                <span>Registered User Directory</span>
+                <span>Registered User Directory ({usersList.length})</span>
               </h3>
               <p className="text-xs text-slate-500">Manage user accounts, verification statuses, and role privileges</p>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="relative">
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div className="relative flex-1 sm:flex-initial min-w-[180px]">
                 <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search by name, email, phone..."
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
-                  className="pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]/20"
+                  className="w-full pl-8 pr-3 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#003366]/20"
                 />
               </div>
 
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white flex-1 sm:flex-initial"
               >
                 <option value="all">All Roles</option>
                 <option value="patient">Patients</option>
@@ -680,7 +680,7 @@ export const AdminDashboard: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white flex-1 sm:flex-initial"
               >
                 <option value="all">All Statuses</option>
                 <option value="active">Active Accounts</option>
@@ -702,7 +702,146 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* MOBILE RESPONSIVE USER CARDS (< md) */}
+          <div className="space-y-3.5 md:hidden">
+            {usersList.map((u) => (
+              <div 
+                key={u.id}
+                className={`p-4 rounded-2xl border transition-all ${
+                  u.accountStatus === 'suspended'
+                    ? 'bg-rose-50/50 border-rose-200'
+                    : 'bg-white border-slate-200 shadow-2xs'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <h4 className="font-black text-slate-900 text-sm leading-tight">{u.fullName}</h4>
+                    <p className="font-mono text-[10px] text-slate-500 mt-0.5">{u.id}</p>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-1">
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                      u.role === 'admin' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-50 text-blue-900 border border-blue-200'
+                    }`}>
+                      {u.role} ({u.assignedRole})
+                    </span>
+
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase flex items-center gap-1 ${
+                      u.accountStatus === 'active'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-rose-100 text-rose-800'
+                    }`}>
+                      {u.accountStatus === 'active' ? <CheckCircle2 className="w-2.5 h-2.5" /> : <Ban className="w-2.5 h-2.5" />}
+                      <span>{u.accountStatus}</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="space-y-1.5 mt-3 pt-2.5 border-t border-slate-100 text-xs">
+                  <div className="flex items-center gap-2 text-slate-700">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate">{u.email}</span>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-slate-600 font-mono">
+                    <Smartphone className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{u.mobileNumberMasked || u.mobileNumber}</span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                      u.emailVerified ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                    }`}>
+                      Email: {u.emailVerified ? '✓ Verified' : 'Pending'}
+                    </span>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                      u.mobileVerified ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200'
+                    }`}>
+                      Mobile: {u.mobileVerified ? '✓ Verified' : 'Pending'}
+                    </span>
+                  </div>
+
+                  {/* Password Inspection Row on Mobile */}
+                  <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 space-y-1 mt-2">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <span className="flex items-center gap-1 font-bold">
+                        <Lock className="w-3 h-3 text-amber-600" />
+                        <span>Password Hash:</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setViewHashUserId(viewHashUserId === u.id ? null : u.id)}
+                          className="text-blue-700 font-black hover:underline cursor-pointer"
+                        >
+                          {viewHashUserId === u.id ? 'Hide' : 'Inspect'}
+                        </button>
+                        <span className="text-slate-300">|</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            navigator.clipboard.writeText(u.passwordHash || '');
+                            alert('Password hash copied to clipboard!');
+                          }}
+                          className="text-slate-600 font-bold hover:underline cursor-pointer"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                    <div className="font-mono text-[10px] text-slate-700 truncate">
+                      {viewHashUserId === u.id ? u.passwordHash : (u.passwordHashPreview || '••••••••••••••••••••••••••••••••')}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Mobile Action Buttons */}
+                <div className="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-100">
+                  <button
+                    onClick={() => handleOpenResetModal(u)}
+                    className="py-2 px-3 rounded-xl text-xs font-black bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-amber-700" />
+                    <span>Reset Pass</span>
+                  </button>
+
+                  {u.role !== 'admin' ? (
+                    <button
+                      onClick={() => handleToggleStatus(u.id, u.accountStatus)}
+                      className={`py-2 px-3 rounded-xl text-xs font-black transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs ${
+                        u.accountStatus === 'active'
+                          ? 'bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300'
+                          : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300'
+                      }`}
+                    >
+                      {u.accountStatus === 'active' ? (
+                        <>
+                          <Ban className="w-3.5 h-3.5 text-rose-700" />
+                          <span>Suspend</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Activate</span>
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="py-2 px-3 rounded-xl text-[10px] font-bold text-slate-400 bg-slate-100 flex items-center justify-center">
+                      Protected Admin
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+
+            {usersList.length === 0 && (
+              <p className="text-xs text-slate-500 text-center py-6">No users found matching current filters.</p>
+            )}
+          </div>
+
+          {/* DESKTOP TABLE VIEW (>= md) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-2xl overflow-hidden bg-white">
               <thead className="bg-slate-100 text-slate-700 uppercase font-black tracking-wider text-[10px]">
                 <tr>
@@ -843,7 +982,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* 5. TAB 3: LOGIN ACTIVITY AUDIT LOGS */}
       {activeTab === 'activity' && (
-        <div className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+        <div className="bg-white p-4 sm:p-6 md:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-serif font-bold text-xl text-slate-900 flex items-center gap-2">
@@ -857,7 +996,7 @@ export const AdminDashboard: React.FC = () => {
               <select
                 value={logStatusFilter}
                 onChange={(e) => setLogStatusFilter(e.target.value)}
-                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none"
+                className="px-3 py-1.5 rounded-xl border border-slate-300 text-xs font-bold text-slate-800 focus:outline-none bg-white w-full sm:w-auto"
               >
                 <option value="all">All Events</option>
                 <option value="success">Successful Logins</option>
@@ -866,7 +1005,47 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* MOBILE RESPONSIVE AUDIT LOG CARDS (< md) */}
+          <div className="space-y-3 md:hidden">
+            {loginLogs.map((log) => (
+              <div 
+                key={log.id}
+                className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-2 text-xs"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-bold text-slate-900 truncate">{log.identifier}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-black shrink-0 ${
+                    log.status === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'
+                  }`}>
+                    {log.status.toUpperCase()}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 text-slate-600 font-mono">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-sans">Timestamp:</span>
+                    <span>{new Date(log.timestamp).toLocaleDateString()} {new Date(log.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block font-sans">Method:</span>
+                    <span>{log.authMethod}</span>
+                  </div>
+                </div>
+
+                <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+                  <span>IP: {log.ipAddress}</span>
+                  <span className="truncate max-w-[150px]" title={log.userAgent}>{log.userAgent}</span>
+                </div>
+              </div>
+            ))}
+
+            {loginLogs.length === 0 && (
+              <p className="text-xs text-slate-500 text-center py-6">No login events recorded yet.</p>
+            )}
+          </div>
+
+          {/* DESKTOP TABLE VIEW (>= md) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs border border-slate-200 rounded-2xl overflow-hidden bg-white">
               <thead className="bg-slate-100 text-slate-700 uppercase font-black tracking-wider text-[10px]">
                 <tr>

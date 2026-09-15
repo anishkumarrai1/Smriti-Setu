@@ -8,6 +8,7 @@ import { PatientDashboard } from './pages/patient/PatientDashboard';
 import { CaregiverDashboard } from './pages/caregiver/CaregiverDashboard';
 import { ClinicianDashboard } from './pages/clinician/ClinicianDashboard';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { FacilityDashboard } from './pages/facility/FacilityDashboard';
 import { ActivityContainer } from './components/activities/ActivityContainer';
 import { ActivityType } from './types';
 import { MemoryGardenView } from './components/memory/MemoryGardenView';
@@ -59,6 +60,9 @@ export const App: React.FC = () => {
   // Called upon successful login from LoginPage or PublicPortal
   const handleOpenAppAuth = (selectedRole?: UserRole) => {
     if (selectedRole) setRole(selectedRole);
+    if (systemRole === 'admin' || selectedRole === 'facility_admin') {
+      setActiveTab('admin');
+    }
     setViewMode('authenticated_app');
   };
 
@@ -177,6 +181,10 @@ export const App: React.FC = () => {
 
           if (activeTab === 'admin') {
             return <AdminDashboard />;
+          }
+
+          if (activeTab === 'facility') {
+            return <FacilityDashboard />;
           }
 
           if (role === 'patient') {
