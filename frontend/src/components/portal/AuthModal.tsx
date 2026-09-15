@@ -676,6 +676,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     />
                   </div>
 
+                  {/* Password Rule Badges */}
+                  <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-[11px] space-y-1">
+                    <span className="font-bold text-amber-900 block">Password Criteria:</span>
+                    <div className="grid grid-cols-3 gap-1 font-semibold text-[10px]">
+                      <span className={currentRules.maxLength ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.maxLength ? '✓' : '○'} Max 8 chars
+                      </span>
+                      <span className={currentRules.hasUppercase ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.hasUppercase ? '✓' : '○'} 1 Uppercase
+                      </span>
+                      <span className={currentRules.hasLowercase ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.hasLowercase ? '✓' : '○'} 1 Lowercase
+                      </span>
+                      <span className={currentRules.hasNumber ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.hasNumber ? '✓' : '○'} 1 Number
+                      </span>
+                      <span className={currentRules.hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.hasSpecialChar ? '✓' : '○'} 1 Symbol (!@#)
+                      </span>
+                      <span className={currentRules.noSpaces ? 'text-emerald-700' : 'text-slate-500'}>
+                        {currentRules.noSpaces ? '✓' : '○'} No spaces
+                      </span>
+                    </div>
+                  </div>
+
                   <button
                     type="submit"
                     disabled={forgotLoading || !isPasswordValid}
