@@ -183,19 +183,20 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onSignO
             {role === 'patient' ? (
               <button
                 onClick={() => setIsProfileModalOpen(true)}
-                className="flex items-center gap-2 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-300 shadow-2xs transition-all cursor-pointer group"
+                className="flex items-center gap-2.5 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-300 shadow-2xs transition-all cursor-pointer group hover:border-[#003366]"
                 title="Click to view/edit your personal profile & photo"
               >
                 <img
                   src={selectedPatient.avatarUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=256&q=80'}
                   alt={selectedPatient.name}
-                  className="w-4 h-4 rounded-full object-cover border border-[#003366]"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border-2 border-[#003366] shadow-xs shrink-0"
                 />
-                <span>
-                  My Profile: <strong className="text-[#003366] group-hover:underline">{selectedPatient.name}</strong>
-                </span>
-                <span className="text-[10px] bg-blue-50 text-[#003366] border border-blue-200 px-1.5 py-0.5 rounded font-black flex items-center gap-1">
-                  Edit Profile / Photo
+                <div className="text-left">
+                  <div className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider leading-none">Senior Patient</div>
+                  <div className="text-xs font-black text-[#003366] group-hover:underline">{selectedPatient.name}</div>
+                </div>
+                <span className="text-[10px] bg-blue-50 text-[#003366] border border-blue-200 px-2 py-0.5 rounded-lg font-black flex items-center gap-1 shadow-2xs">
+                  Edit Photo
                 </span>
               </button>
             ) : (
