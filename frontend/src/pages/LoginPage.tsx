@@ -302,15 +302,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             {/* Direct Registration Callout Button */}
             <div className="pt-3 border-t border-slate-200 text-center space-y-2">
               <p className="text-xs text-slate-600 font-medium">
-                Need to create a new account or verify via real Email/Mobile OTP?
+                New to Smriti-Setu or need to register a patient/doctor account?
               </p>
               <button
                 type="button"
                 onClick={() => openAuthModal('signup')}
-                className="w-full py-3 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99]"
+                className="w-full py-3 px-4 bg-gradient-to-r from-emerald-800 to-teal-800 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer hover:scale-[1.01] active:scale-[0.99] border border-emerald-600/40"
               >
-                <UserPlus className="w-4 h-4 text-emerald-400" />
-                <span>Register New Account with Email/Mobile OTP</span>
+                <UserPlus className="w-4 h-4 text-emerald-300" />
+                <span>Create New Account (Open Registration Popup)</span>
               </button>
             </div>
 

@@ -264,465 +264,458 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-gradient-to-b from-[#031326] via-[#081F38] to-[#031326] flex flex-col justify-between p-3 sm:p-6 md:p-8 animate-fadeIn text-slate-100 relative">
-      
-      {/* Background Glows & Ashok Chakra Watermark */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#FF9933]/15 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 right-10 w-[600px] h-[350px] bg-[#138808]/15 rounded-full blur-3xl" />
-      </div>
-
-      {/* 1. Header Strip */}
-      <div className="relative z-10 w-full max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3 py-2 border-b border-slate-700/60 shrink-0">
-        <div className="flex items-center gap-3">
-          <IndianFlagBadge />
-          <div className="flex flex-col">
-            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-400">
-              भारत सरकार · National Health Mission
-            </span>
-            <span className="text-[11px] text-slate-300 font-bold hidden sm:inline">
-              Ministry of Health & Family Welfare · Smriti-Setu AI Tele-Grid
-            </span>
-          </div>
+    <div 
+      className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 animate-fadeIn overflow-y-auto"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      {/* Central Floating Pop-up Modal Container */}
+      <div className="relative w-full max-w-lg bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-slate-300 overflow-hidden flex flex-col my-auto animate-scaleUp">
+        
+        {/* Tiranga Tricolor Line */}
+        <div className="h-1.5 w-full flex shrink-0">
+          <div className="h-full w-1/3 bg-[#FF9933]" />
+          <div className="h-full w-1/3 bg-slate-200" />
+          <div className="h-full w-1/3 bg-[#138808]" />
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* Modal Header Strip */}
+        <div className="bg-[#002B49] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between gap-3 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1 bg-white rounded-lg shadow-xs shrink-0">
+              <AshokaEmblem className="w-5 h-7" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                  भारत सरकार · GOI
+                </span>
+                <span className="text-[9px] bg-emerald-900/80 text-emerald-300 border border-emerald-500/40 px-1.5 py-0.2 rounded font-bold">
+                  🔒 256-Bit SSL
+                </span>
+              </div>
+              <h2 className="text-base sm:text-lg font-serif font-bold text-white tracking-tight">
+                {authMode === 'signup' 
+                  ? 'Create New Account' 
+                  : authMode === 'forgot_password' 
+                  ? 'Reset Account Password' 
+                  : 'Platform Log In'}
+              </h2>
+            </div>
+          </div>
+
           <button
+            type="button"
             onClick={onClose}
-            className="text-xs font-bold text-slate-200 hover:text-white bg-slate-800/80 hover:bg-slate-700 px-4 py-1.5 rounded-xl border border-slate-600 flex items-center gap-1.5 transition-all cursor-pointer shadow-sm hover:scale-105"
+            className="p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer border border-slate-600/60"
+            title="Close popup"
           >
-            <span>Close</span>
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-4 h-4" />
           </button>
         </div>
-      </div>
 
-      {/* 2. Central Elevated Official Gateway Container */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto my-auto py-4 sm:py-6">
-        <div className="bg-white text-slate-900 rounded-3xl sm:rounded-4xl shadow-2xl border-2 border-slate-300/90 overflow-hidden flex flex-col backdrop-blur-md">
-          
-          {/* Official Tiranga Tricolor Line */}
-          <div className="h-2.5 w-full flex shrink-0">
-            <div className="h-full w-1/3 bg-[#FF9933]" />
-            <div className="h-full w-1/3 bg-white" />
-            <div className="h-full w-1/3 bg-[#138808]" />
+        {/* Modal Sub-Header & Persona Switcher */}
+        <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+          {/* Persona selector */}
+          <div className="flex items-center gap-1 bg-slate-200/90 p-1 rounded-xl w-full">
+            {[
+              { id: 'patient' as UserRole, label: 'Patient', icon: HeartPulse, active: 'bg-rose-700 text-white' },
+              { id: 'caregiver' as UserRole, label: 'Caretaker', icon: UserCheck, active: 'bg-emerald-700 text-white' },
+              { id: 'clinician' as UserRole, label: 'Doctor', icon: Stethoscope, active: 'bg-[#003366] text-white' },
+            ].map((r) => {
+              const Icon = r.icon;
+              const isSelected = selectedRoleTab === r.id;
+              return (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => setSelectedRoleTab(r.id)}
+                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    isSelected ? `${r.active} shadow-xs` : 'text-slate-700 hover:bg-white/80'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{r.label}</span>
+                </button>
+              );
+            })}
           </div>
+        </div>
 
-          {/* Modal Header */}
-          <div className="bg-[#0A2540] text-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 shrink-0 relative overflow-hidden">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="p-2 bg-white rounded-2xl shadow-md shrink-0">
-                <AshokaEmblem className="w-10 h-14" />
-              </div>
+        {/* Modal Form Content */}
+        <div className="p-4 sm:p-6 space-y-4 max-h-[75vh] overflow-y-auto bg-[#FAFBFD]">
+
+          {/* MODE 1: SIGNUP (REGISTRATION POPUP) */}
+          {authMode === 'signup' && (
+            <form onSubmit={handleSignupSubmit} className="space-y-3.5">
+              {signupError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{signupError}</span>
+                </div>
+              )}
+
+              {signupNotice && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-950 font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{signupNotice}</span>
+                </div>
+              )}
+
+              {/* Full Legal Name */}
               <div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-amber-300 bg-amber-950/40 px-2.5 py-0.5 rounded-full border border-amber-400/40">
-                    Official Production Authentication
-                  </span>
-                  <span className="bg-emerald-500/20 text-emerald-300 px-2.5 py-0.5 rounded-full text-[9px] font-extrabold border border-emerald-400/40">
-                    🔒 SSL 256-Bit & bcrypt Encrypted
-                  </span>
-                </div>
-                <h1 className="text-2xl sm:text-3xl font-serif font-black text-white mt-1">
-                  {authMode === 'login' ? 'Smriti-Setu Login' : authMode === 'signup' ? 'Create New Account' : 'Forgot Password'}
-                </h1>
+                <label className="block text-xs font-bold text-slate-800 mb-1">
+                  Full Legal Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="e.g. Ramesh Chandra Barman"
+                  className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-blue-100"
+                />
               </div>
-            </div>
 
-            {/* Auth Mode Switcher */}
-            <div className="flex items-center gap-1.5 bg-slate-800 p-1 rounded-2xl border border-slate-700">
-              <button
-                type="button"
-                onClick={() => setAuthMode('login')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                  authMode === 'login' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Log In
-              </button>
-              <button
-                type="button"
-                onClick={() => setAuthMode('signup')}
-                className={`px-3.5 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                  authMode === 'signup' ? 'bg-[#004085] text-white shadow-xs' : 'text-slate-300 hover:text-white'
-                }`}
-              >
-                Sign Up
-              </button>
-            </div>
-          </div>
-
-          {/* Modal Body */}
-          <div className="p-6 sm:p-8 space-y-6 bg-[#FDFBF7]">
-
-            {/* 3 Core Roles Switcher */}
-            <div className="grid grid-cols-3 gap-2 bg-slate-200/80 p-1 rounded-2xl border border-slate-300">
-              {[
-                { id: 'patient' as UserRole, label: 'Patient Portal', icon: HeartPulse, color: 'text-rose-700' },
-                { id: 'caregiver' as UserRole, label: 'Caretaker Portal', icon: UserCheck, color: 'text-emerald-700' },
-                { id: 'clinician' as UserRole, label: 'Doctor Portal', icon: Stethoscope, color: 'text-blue-700' },
-              ].map((r) => {
-                const Icon = r.icon;
-                const isSelected = selectedRoleTab === r.id;
-                return (
-                  <button
-                    key={r.id}
-                    type="button"
-                    onClick={() => setSelectedRoleTab(r.id)}
-                    className={`py-2 px-2 rounded-xl text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer select-none ${
-                      isSelected ? 'bg-[#004085] text-white shadow-md' : 'text-slate-700 hover:bg-white/70'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{r.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* MODE 1: LOGIN FORM */}
-            {authMode === 'login' && (
-              <form onSubmit={handleLoginSubmit} className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                {loginError && (
-                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{loginError}</span>
-                  </div>
-                )}
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1.5">
-                    <Mail className="w-3.5 h-3.5 text-[#004085]" />
-                    <span>Verified Email Address or Mobile Number:</span>
+              {/* Email & OTP Verification */}
+              <div className="p-3 rounded-xl bg-slate-100/90 border border-slate-200 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5 text-[#003366]" />
+                    <span>Email Address</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="e.g. user@smritisetu.gov.in or +91 98640 12345"
-                    className="w-full px-4 py-3 text-xs font-semibold text-slate-900 bg-slate-50 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
-                  />
+                  {emailVerified && (
+                    <span className="text-[11px] font-bold text-emerald-700 flex items-center gap-1 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                      <CheckCircle2 className="w-3 h-3" /> OTP Verified
+                    </span>
+                  )}
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-[#004085]" />
-                      <span>Password:</span>
-                    </label>
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="email"
+                    required
+                    disabled={emailVerified}
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    placeholder="e.g. user@smritisetu.gov.in"
+                    className="w-full px-3 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
+                  />
+                  {!emailVerified && (
                     <button
                       type="button"
-                      onClick={() => setAuthMode('forgot_password')}
-                      className="text-xs font-bold text-[#004085] hover:underline"
+                      onClick={handleSendEmailOtp}
+                      disabled={emailCooldown > 0 || isSendingEmailOtp}
+                      className="px-3 py-2 rounded-xl bg-[#003366] hover:bg-[#002244] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1 shadow-2xs"
                     >
-                      Forgot password?
+                      {isSendingEmailOtp && <RefreshCw className="w-3 h-3 animate-spin" />}
+                      {isSendingEmailOtp
+                        ? 'Sending...'
+                        : emailCooldown > 0
+                        ? `Resend (${emailCooldown}s)`
+                        : emailOtpSent
+                        ? 'Resend OTP'
+                        : 'Send OTP'}
+                    </button>
+                  )}
+                </div>
+
+                {emailOtpSent && !emailVerified && (
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <input
+                      type="text"
+                      value={emailOtp}
+                      onChange={(e) => setEmailOtp(e.target.value)}
+                      placeholder="Enter 6-digit OTP code"
+                      className="w-full px-3 py-1.5 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleVerifyEmailOtp}
+                      disabled={isVerifyingEmailOtp || !emailOtp}
+                      className="px-3.5 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer flex items-center gap-1 disabled:opacity-50 shadow-2xs"
+                    >
+                      {isVerifyingEmailOtp && <RefreshCw className="w-3 h-3 animate-spin" />}
+                      {isVerifyingEmailOtp ? 'Verifying...' : 'Verify'}
                     </button>
                   </div>
+                )}
+              </div>
+
+              {/* Mobile Number */}
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1">
+                  <Smartphone className="w-3.5 h-3.5 text-[#003366]" />
+                  <span>Mobile Number</span>
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={signupMobile}
+                  onChange={(e) => setSignupMobile(e.target.value)}
+                  placeholder="e.g. +91 98640 12345"
+                  className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366] focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* Passwords */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Password</label>
                   <input
                     type="password"
                     required
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="w-full px-4 py-3 text-xs font-semibold text-slate-900 bg-slate-50 rounded-2xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    placeholder="Max 8 chars"
+                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
                   />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-800 mb-1">Confirm Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password"
+                    className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
+                  />
+                </div>
+              </div>
 
-                <div className="pt-2">
+              {/* Password Rule Badges */}
+              <div className="p-2.5 rounded-xl bg-amber-50/80 border border-amber-200 text-[11px] space-y-1">
+                <span className="font-bold text-amber-900 block">Password Criteria:</span>
+                <div className="grid grid-cols-3 gap-1 font-semibold text-[10px]">
+                  <span className={currentRules.maxLength ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.maxLength ? '✓' : '○'} Max 8 chars
+                  </span>
+                  <span className={currentRules.hasUppercase ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.hasUppercase ? '✓' : '○'} 1 Uppercase
+                  </span>
+                  <span className={currentRules.hasLowercase ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.hasLowercase ? '✓' : '○'} 1 Lowercase
+                  </span>
+                  <span className={currentRules.hasNumber ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.hasNumber ? '✓' : '○'} 1 Number
+                  </span>
+                  <span className={currentRules.hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.hasSpecialChar ? '✓' : '○'} 1 Symbol (!@#)
+                  </span>
+                  <span className={currentRules.noSpaces ? 'text-emerald-700' : 'text-slate-500'}>
+                    {currentRules.noSpaces ? '✓' : '○'} No spaces
+                  </span>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={signupLoading || !emailVerified || !signupMobile || !isPasswordValid}
+                className="w-full py-3 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.99]"
+              >
+                {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                <span>Create Account & Sign In as {selectedRoleTab.toUpperCase()}</span>
+              </button>
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('login')}
+                  className="text-xs font-bold text-[#003366] hover:underline cursor-pointer"
+                >
+                  Already have an account? Log In here
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* MODE 2: LOGIN POPUP */}
+          {authMode === 'login' && (
+            <form onSubmit={handleLoginSubmit} className="space-y-3.5">
+              {loginError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{loginError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-800 mb-1 flex items-center gap-1">
+                  <Mail className="w-3.5 h-3.5 text-[#003366]" />
+                  <span>Registered Email or Mobile</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={loginIdentifier}
+                  onChange={(e) => setLoginIdentifier(e.target.value)}
+                  placeholder="e.g. user@smritisetu.gov.in"
+                  className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1">
+                    <Lock className="w-3.5 h-3.5 text-[#003366]" />
+                    <span>Password</span>
+                  </label>
                   <button
-                    type="submit"
-                    disabled={loginLoading}
-                    className="w-full py-3.5 px-6 rounded-2xl bg-[#004085] hover:bg-[#0A2540] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer hover:scale-105 active:scale-95"
+                    type="button"
+                    onClick={() => setAuthMode('forgot_password')}
+                    className="text-xs font-bold text-[#003366] hover:underline cursor-pointer"
                   >
-                    {loginLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                    <span>Log In to {selectedRoleTab.toUpperCase()} Portal</span>
-                    <ArrowRight className="w-4 h-4" />
+                    Forgot Password?
                   </button>
                 </div>
-              </form>
-            )}
+                <input
+                  type="password"
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
+                />
+              </div>
 
-            {/* MODE 2: REAL SIGNUP FORM WITH OTP VERIFICATION & LIVE PASSWORD RULES */}
-            {authMode === 'signup' && (
-              <form onSubmit={handleSignupSubmit} className="space-y-5 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                {signupError && (
-                  <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{signupError}</span>
-                  </div>
-                )}
+              <button
+                type="submit"
+                disabled={loginLoading}
+                className="w-full py-3 px-4 rounded-xl bg-[#003366] hover:bg-[#002244] text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 active:scale-[0.99]"
+              >
+                {loginLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                <span>Log In as {selectedRoleTab.toUpperCase()}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-                {signupNotice && (
-                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs font-black flex items-center gap-2 animate-pulse">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{signupNotice}</span>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Full Name */}
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Full Name</label>
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Ranjit Borthakur"
-                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Email & OTP Verification */}
-                  <div className="sm:col-span-2 space-y-2 p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                        <Mail className="w-3.5 h-3.5 text-[#004085]" />
-                        <span>Email Address:</span>
-                      </label>
-                      {emailVerified && (
-                        <span className="text-xs font-black text-emerald-700 flex items-center gap-1 bg-emerald-100 px-2.5 py-0.5 rounded-full border border-emerald-300">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Verified
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="email"
-                        required
-                        disabled={emailVerified}
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        placeholder="user@smritisetu.gov.in"
-                        className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none"
-                      />
-                      {!emailVerified && (
-                        <button
-                          type="button"
-                          onClick={handleSendEmailOtp}
-                          disabled={emailCooldown > 0 || isSendingEmailOtp}
-                          className="px-3.5 py-2 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white text-xs font-bold shrink-0 cursor-pointer transition-all disabled:opacity-50 flex items-center gap-1.5"
-                        >
-                          {isSendingEmailOtp && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                          {isSendingEmailOtp
-                            ? 'Sending...'
-                            : emailCooldown > 0
-                            ? `Resend (${emailCooldown}s)`
-                            : emailOtpSent
-                            ? 'Resend OTP'
-                            : 'Send Email OTP'}
-                        </button>
-                      )}
-                    </div>
-
-                    {emailOtpSent && !emailVerified && (
-                      <div className="flex items-center gap-2 pt-1">
-                        <input
-                          type="text"
-                          value={emailOtp}
-                          onChange={(e) => setEmailOtp(e.target.value)}
-                          placeholder="Enter 6-digit Email OTP"
-                          className="w-full px-3 py-1.5 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleVerifyEmailOtp}
-                          disabled={isVerifyingEmailOtp || !emailOtp}
-                          className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
-                        >
-                          {isVerifyingEmailOtp && <RefreshCw className="w-3 h-3 animate-spin" />}
-                          {isVerifyingEmailOtp ? 'Verifying...' : 'Verify OTP'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Mobile Number (Direct Input) */}
-                  <div className="sm:col-span-2 space-y-1.5 p-3 rounded-2xl bg-slate-50 border border-slate-200">
-                    <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                      <Smartphone className="w-3.5 h-3.5 text-[#004085]" />
-                      <span>Mobile Number (with Country Code):</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={signupMobile}
-                      onChange={(e) => setSignupMobile(e.target.value)}
-                      placeholder="+91 98640 12345"
-                      className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#004085]"
-                    />
-                  </div>
-
-                  {/* Password & Confirm Password */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={signupPassword}
-                      onChange={(e) => setSignupPassword(e.target.value)}
-                      placeholder="Max 8 characters"
-                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-800 mb-1">Confirm Password</label>
-                    <input
-                      type="password"
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Re-enter password"
-                      className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Live Requirement Indicators */}
-                <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1 text-xs">
-                  <span className="font-extrabold text-amber-900 block mb-1">Password Requirements:</span>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px] font-bold">
-                    <span className={currentRules.maxLength ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.maxLength ? '✓' : '○'} Max 8 chars
-                    </span>
-                    <span className={currentRules.hasUppercase ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.hasUppercase ? '✓' : '○'} 1 Uppercase (A-Z)
-                    </span>
-                    <span className={currentRules.hasLowercase ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.hasLowercase ? '✓' : '○'} 1 Lowercase (a-z)
-                    </span>
-                    <span className={currentRules.hasNumber ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.hasNumber ? '✓' : '○'} 1 Digit (0-9)
-                    </span>
-                    <span className={currentRules.hasSpecialChar ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.hasSpecialChar ? '✓' : '○'} 1 Symbol (!@#$)
-                    </span>
-                    <span className={currentRules.noSpaces ? 'text-emerald-700' : 'text-slate-500'}>
-                      {currentRules.noSpaces ? '✓' : '○'} No spaces
-                    </span>
-                  </div>
-                </div>
-
+              <div className="pt-2 text-center">
                 <button
-                  type="submit"
-                  disabled={signupLoading || !emailVerified || !signupMobile || !isPasswordValid}
-                  className="w-full py-3.5 px-6 rounded-2xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  type="button"
+                  onClick={() => setAuthMode('signup')}
+                  className="text-xs font-bold text-emerald-700 hover:underline cursor-pointer"
                 >
-                  {signupLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
-                  <span>Create Account & Log In</span>
+                  Don't have an account? Register New Account
                 </button>
-              </form>
-            )}
+              </div>
+            </form>
+          )}
 
-            {/* MODE 3: FORGOT PASSWORD FLOW */}
-            {authMode === 'forgot_password' && (
-              <form onSubmit={handleResetPasswordSubmit} className="space-y-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
-                {forgotError && (
-                  <div className="p-3 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 text-xs font-bold flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
-                    <span>{forgotError}</span>
-                  </div>
-                )}
+          {/* MODE 3: FORGOT PASSWORD */}
+          {authMode === 'forgot_password' && (
+            <form onSubmit={handleResetPasswordSubmit} className="space-y-3.5">
+              {forgotError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{forgotError}</span>
+                </div>
+              )}
 
-                {forgotMessage && (
-                  <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs font-bold flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>{forgotMessage}</span>
-                  </div>
-                )}
+              {forgotMessage && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-xl text-xs text-emerald-900 font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{forgotMessage}</span>
+                </div>
+              )}
 
-                {!forgotVerified ? (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">Registered Email or Mobile Number</label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          required
-                          value={forgotIdentifier}
-                          onChange={(e) => setForgotIdentifier(e.target.value)}
-                          placeholder="user@smritisetu.gov.in or +91 98640 12345"
-                          className="w-full px-3.5 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleSendForgotOtp}
-                          className="px-4 py-2.5 rounded-xl bg-[#004085] hover:bg-[#0A2540] text-white font-bold text-xs shrink-0 cursor-pointer"
-                        >
-                          Send OTP
-                        </button>
-                      </div>
-                    </div>
-
-                    {forgotOtpSent && (
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={forgotOtp}
-                          onChange={(e) => setForgotOtp(e.target.value)}
-                          placeholder="Enter 6-digit OTP"
-                          className="w-full px-3.5 py-2 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400"
-                        />
-                        <button
-                          type="button"
-                          onClick={handleVerifyForgotOtp}
-                          className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer"
-                        >
-                          Verify OTP
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-800 mb-1">New Password</label>
+              {!forgotVerified ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">Registered Email or Mobile</label>
+                    <div className="flex items-center gap-1.5">
                       <input
-                        type="password"
+                        type="text"
                         required
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Enter new password"
-                        className="w-full px-4 py-2.5 text-xs font-semibold text-slate-900 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none"
+                        value={forgotIdentifier}
+                        onChange={(e) => setForgotIdentifier(e.target.value)}
+                        placeholder="user@smritisetu.gov.in"
+                        className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
                       />
+                      <button
+                        type="button"
+                        onClick={handleSendForgotOtp}
+                        className="px-3.5 py-2 rounded-xl bg-[#003366] hover:bg-[#002244] text-white font-bold text-xs shrink-0 cursor-pointer shadow-2xs"
+                      >
+                        Send OTP
+                      </button>
                     </div>
-
-                    <button
-                      type="submit"
-                      disabled={forgotLoading || !isPasswordValid}
-                      className="w-full py-3 px-6 rounded-2xl bg-[#004085] hover:bg-[#0A2540] text-white font-black text-xs shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-                    >
-                      {forgotLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                      <span>Update Password & Log In</span>
-                    </button>
                   </div>
-                )}
-              </form>
-            )}
 
-          </div>
+                  {forgotOtpSent && (
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="text"
+                        value={forgotOtp}
+                        onChange={(e) => setForgotOtp(e.target.value)}
+                        placeholder="Enter 6-digit OTP code"
+                        className="w-full px-3.5 py-2 text-xs font-mono font-bold bg-white rounded-xl border border-amber-400 focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleVerifyForgotOtp}
+                        className="px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer shadow-2xs"
+                      >
+                        Verify OTP
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-800 mb-1">New Password</label>
+                    <input
+                      type="password"
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="Enter new password (max 8 chars)"
+                      className="w-full px-3.5 py-2 text-xs font-semibold text-slate-900 bg-white rounded-xl border border-slate-300 focus:outline-none focus:border-[#003366]"
+                    />
+                  </div>
 
-          {/* Modal Footer */}
-          <div className="bg-slate-100 px-6 py-3.5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-600 font-medium shrink-0">
-            <div className="flex items-center gap-2">
-              <IndianFlagBadge />
-              <span>Official Digital Public Infrastructure (DPI) · Smriti-Setu AI Platform</span>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-[#004085] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <span>Browse Public Health Portal</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
-          </div>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading || !isPasswordValid}
+                    className="w-full py-3 px-4 rounded-xl bg-[#003366] hover:bg-[#002244] text-white font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    {forgotLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                    <span>Update Password & Log In</span>
+                  </button>
+                </div>
+              )}
+
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('login')}
+                  className="text-xs font-bold text-[#003366] hover:underline cursor-pointer"
+                >
+                  Back to Log In
+                </button>
+              </div>
+            </form>
+          )}
 
         </div>
-      </div>
 
+        {/* Modal Footer Strip */}
+        <div className="bg-slate-100 px-4 sm:px-6 py-2.5 border-t border-slate-200 flex items-center justify-between text-[11px] text-slate-600 font-medium">
+          <div className="flex items-center gap-1.5">
+            <IndianFlagBadge />
+            <span>National Cognitive Health Platform</span>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-500 hover:text-slate-800 font-bold cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+
+      </div>
     </div>
   );
 };
