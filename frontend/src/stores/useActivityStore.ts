@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { CognitiveActivity, GameSession, DifficultyLevel, ActivityType } from '../types';
 import { calculateNextDifficulty } from '../utils/adaptiveDifficulty';
+import { AiEvaluationReport } from '../utils/aiCognitiveEngine';
 import { gameApi } from '../services/api';
 import { useAuthStore } from './useAuthStore';
 
@@ -11,6 +12,10 @@ interface ActivityState {
   sessionHistory: GameSession[];
   currentDifficulty: DifficultyLevel;
   difficultyAdjustmentNotice: string | null;
+  memoryMatchLevel: number;
+  latestAiReport: AiEvaluationReport | null;
+  setMemoryMatchLevel: (level: number) => void;
+  setLatestAiReport: (report: AiEvaluationReport | null) => void;
   startSession: (type: ActivityType) => void;
   completeSession: (
     accuracy: number,
@@ -197,6 +202,17 @@ export const useActivityStore = create<ActivityState>((set, get) => ({
   sessionHistory: loadPersistedSessions(),
   currentDifficulty: 'easy',
   difficultyAdjustmentNotice: null,
+  memoryMatchLevel: 1, // Defaults to Level 1: 2 pairs (4 cards)
+  latestAiReport: null,
+
+  setMemoryMatchLevel: (level: number) => {
+    const clamped = Math.max(1, Math.min(4, level));
+    set({ memoryMatchLevel: clamped });
+  },
+
+  setLatestAiReport: (report: AiEvaluationReport | null) => {
+    set({ latestAiReport: report });
+  },
 
   fetchSessionHistory: async (patientId = 'pat-ner-001') => {
     try {

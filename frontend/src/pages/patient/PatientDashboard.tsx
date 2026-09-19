@@ -29,10 +29,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({ onStartActiv
       id: 'memory_match' as ActivityType,
       title: 'Visual Memory Match',
       category: 'Visual Memory',
-      duration: '5 mins',
-      difficulty: 'Adaptive',
+      duration: '4-6 mins',
+      difficulty: 'AI Adaptive (2 to 8 Pairs)',
       image: `${baseUrl}card_memory_match.jpg`,
-      description: 'Match pairs of familiar pictures, sunflowers, and scenic river cards.',
+      description: 'AI-driven card matching starting from 2 pairs up to 8 pairs. Dynamic speed and memory adjustment.',
       badgeColor: 'bg-[#004085]',
     },
     {
